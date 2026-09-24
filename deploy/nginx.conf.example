@@ -1,0 +1,63 @@
+# Exemplu de configurare nginx pentru build-ul static din `dist/`.
+# Adaptați server_name și certificatele; apoi:
+#   npm run build
+#
+# Antetele de securitate stau în două fișiere din /etc/nginx/snippets/:
+#   danen-headers.conf — HSTS, X-Frame-Options, nosniff, Referrer-Policy
+#   danen-csp.conf     — politica de conținut, doar pentru fișierele statice
+#
+# Atenție: un `location` care are propriul `add_header` nu mai moștenește
+# antetele de mai sus, deci fișierele trebuie incluse din nou acolo.
+
+server {
+    listen 80;
+    server_name exemplu.ro www.exemplu.ro;   # PLACEHOLDER
+
+    root /var/www/danen/dist;
+    index index.html;
+
+    include snippets/danen-headers.conf;
+    include snippets/danen-csp.conf;
+
+    # Serviciul de mesaje. CSP nu se include aici: paginile randate de Node își
+    # trimit propria politică, iar două antete CSP s-ar aplica simultan.
+    location /api/ {
+        proxy_pass http://127.0.0.1:8091;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        # Cheia limitării de rată. Trebuie setat din $remote_addr, nu preluat
+        # de la client, altfel limitarea se ocolește printr-un antet fals.
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        include snippets/danen-headers.conf;
+    }
+
+    # Rutare pe client: orice adresă necunoscută primește index.html,
+    # altfel accesul direct la /servicii ar da 404.
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Fișierele din assets/ au hash în nume, deci pot fi memorate agresiv.
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        access_log off;
+
+        include snippets/danen-headers.conf;
+        include snippets/danen-csp.conf;
+    }
+
+    # index.html nu se memorează, ca lansările noi să ajungă imediat la vizitatori.
+    location = /index.html {
+        add_header Cache-Control "no-cache";
+
+        include snippets/danen-headers.conf;
+        include snippets/danen-csp.conf;
+    }
+
+    gzip on;
+    gzip_types text/css application/javascript image/svg+xml;
+    gzip_min_length 1024;
+}

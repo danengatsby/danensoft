@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="color-scheme" content="light dark" />
+    <!--
+      Cât timp site-ul conține date de identitate demonstrative, îl ținem în
+      afara motoarelor de căutare. Ștergeți linia de mai jos la publicarea
+      pe domeniul final, după completarea datelor reale.
+    -->
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#f1eee7" />
+    <script>
+      // Aplică tema salvată înainte de prima randare, ca să nu apară
+      // o sclipire de temă greșită. Implicit: întunecat.
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('danen-theme')
+          var theme = stored === 'light' || stored === 'dark' ? stored : 'light'
+          document.documentElement.dataset.theme = theme
+          document.documentElement.style.colorScheme = theme
+        } catch (error) {
+          document.documentElement.dataset.theme = 'light'
+        }
+      })()
+    </script>
+    <title>Danen Soft Studio · Aplicații web, integrări și automatizări</title>
+    <meta
+      name="description"
+      content="Studio de produs software: aplicații web pe măsură, integrări între sisteme și automatizări pentru companii care au depășit foile de calcul."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ro_RO" />
+    <meta property="og:title" content="Danen Soft Studio · Studio de produs software" />
+    <meta
+      property="og:description"
+      content="Aplicații web pe măsură, integrări între sisteme și automatizări. Cod și infrastructură în proprietatea clientului."
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

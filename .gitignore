@@ -1,0 +1,17 @@
+node_modules
+dist
+coverage
+*.local
+.env.local
+.env.*.local
+.DS_Store
+npm-debug.log*
+qa-screens/
+
+# `.env` este urmărit intenționat: conține doar calea relativă a formularului
+# (`VITE_CONTACT_ENDPOINT=/api/contact`), care nu este un secret și care ajunge
+# oricum în bundle-ul livrat browserului. Fără el, un build pornit dintr-o clonă
+# curată ar trece formularul în mod demonstrativ, tăcut.
+#
+# Secretele NU stau aici. Parolele SMTP și restul variabilelor serviciului sunt
+# în /etc/danen/api.env, în afara depozitului, citite de unitatea systemd.
