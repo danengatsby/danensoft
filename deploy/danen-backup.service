@@ -1,0 +1,28 @@
+[Unit]
+Description=Danen Soft Studio - copie de siguranta a bazei de mesaje
+Documentation=file:///var/www/danen/scripts/backup.mjs
+After=network.target
+
+[Service]
+Type=oneshot
+User=danen
+Group=danen
+WorkingDirectory=/var/www/danen
+Environment=DANEN_DB=/var/lib/danen/messages.db
+Environment=DANEN_BACKUP_DIR=/var/backups/danen
+Environment=DANEN_BACKUP_KEEP=14
+ExecStart=/usr/bin/node --no-warnings /var/www/danen/scripts/backup.mjs
+
+# Aceleasi restrictii ca serviciul principal, plus dreptul de scriere in
+# directorul de copii. Baza se citeste, nu se modifica.
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_UNIX
+ReadWritePaths=/var/lib/danen /var/backups/danen
+
+[Install]
+WantedBy=multi-user.target

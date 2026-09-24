@@ -1,0 +1,30 @@
+[Unit]
+Description=Danen Soft Studio - API contact si administrare mesaje
+After=network.target
+
+[Service]
+Type=simple
+User=danen
+Group=danen
+WorkingDirectory=/var/www/danen
+EnvironmentFile=/etc/danen/api.env
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=8091
+Environment=DANEN_DB=/var/lib/danen/messages.db
+ExecStart=/usr/bin/node --no-warnings /var/www/danen/server/index.mjs
+Restart=on-failure
+RestartSec=3
+
+# Restrictii de securitate
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+ReadWritePaths=/var/lib/danen
+
+[Install]
+WantedBy=multi-user.target

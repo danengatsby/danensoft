@@ -1,0 +1,13 @@
+[Unit]
+Description=Danen Soft Studio - copie zilnica a bazei de mesaje
+
+[Timer]
+# Zilnic la 03:20, ora serverului. Persistent: daca serverul era oprit la ora
+# programata, copia se face la prima pornire, nu se sare peste ea.
+OnCalendar=*-*-* 03:20:00
+RandomizedDelaySec=15m
+Persistent=yes
+Unit=danen-backup.service
+
+[Install]
+WantedBy=timers.target
