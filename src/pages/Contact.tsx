@@ -14,7 +14,7 @@ export default function Contact() {
     <>
       <PageIntro
         eyebrow="Contact"
-        note="Formular demonstrativ · datele nu sunt trimise"
+        note="Răspuns în maximum două zile lucrătoare"
         title={
           <>
             Spuneți-ne ce trebuie <em>construit.</em>
@@ -71,12 +71,14 @@ export default function Contact() {
                   <CheckIcon />
                   <a href={`mailto:${company.email}`}>{company.email}</a>
                 </li>
-                <li>
-                  <CheckIcon />
-                  <a href={`tel:${company.phone.replace(/\s/g, '')}`}>
-                    {company.phone}
-                  </a>
-                </li>
+                {company.phone && (
+                  <li>
+                    <CheckIcon />
+                    <a href={`tel:${company.phone.replace(/\s/g, '')}`}>
+                      {company.phone}
+                    </a>
+                  </li>
+                )}
                 <li>
                   <CheckIcon />
                   <span>{company.location}</span>

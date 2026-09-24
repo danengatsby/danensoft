@@ -1,5 +1,5 @@
 import type { ReactElement, SVGProps } from 'react'
-import { CodeIcon, LayersIcon, SparkIcon, WorkflowIcon } from './Icons'
+import { CloudIcon, CodeIcon, LayersIcon, SparkIcon, WorkflowIcon } from './Icons'
 
 type Icon = (props: SVGProps<SVGSVGElement>) => ReactElement
 
@@ -9,4 +9,5 @@ export const serviceIcons: Record<string, Icon> = {
   integrari: WorkflowIcon,
   ai: SparkIcon,
   mentenanta: LayersIcon,
+  cloud: CloudIcon,
 }

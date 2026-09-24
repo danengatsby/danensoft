@@ -1,34 +1,32 @@
-/**
- * Conținutul site-ului, într-un singur loc.
- *
- * ⚠ DATE DE CONTACT PLACEHOLDER — verifică și înlocuiește înainte de publicare:
- *    company.email, company.phone, company.location, company.legal, social.*
- *    Numele companiei („Danen Soft Studio”) este derivat din calea proiectului și
- *    poate fi schimbat doar de aici.
- */
+/** Conținutul comercial al site-ului, într-un singur loc. */
 
 export type NavItem = { label: string; to: string }
 
 export const company = {
-  name: 'Danen Soft Studio',
-  initials: 'DSS',
-  tagline: 'Studio de produs software',
-  /** PLACEHOLDER */
-  email: 'contact@example.com',
-  /** PLACEHOLDER */
-  phone: '+40 700 000 000',
-  /** PLACEHOLDER */
-  location: 'România · lucrăm remote, fus orar UTC+2/+3',
-  /** PLACEHOLDER — completează denumirea legală, CUI și Reg. Com. */
-  legal: 'Denumire legală · CUI · Reg. Com. (de completat)',
-  foundedNote: 'Echipă performantă, cu contact direct între dumneavoastră și oamenii care scriu codul.',
+  name: 'Moldovan Lux',
+  legalName: 'MOLDOVAN LUX S.R.L.',
+  initials: 'ML',
+  tagline: 'Aplicații cloud și produse SaaS',
+  email: 'moldovanlux@gmail.com',
+  phone: null as string | null,
+  location: 'Iași, România · colaborare remote',
+  legal: 'MOLDOVAN LUX S.R.L. · CUI 30342978 · J22/1026/21.06.2012',
+  siteUrl: 'https://danenachesoft.space',
+  foundedNote:
+    'Studio software independent, cu contact direct între client și persoana care coordonează proiectul.',
 } as const
 
-export const social: { label: string; href: string }[] = [
-  // PLACEHOLDER — înlocuiește sau șterge rândurile nefolosite.
-  { label: 'GitHub', href: 'https://github.com/' },
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/' },
-]
+export const social: { label: string; href: string }[] = []
+
+export const team = [
+  {
+    name: 'Enache Dan',
+    role: 'Administrator',
+    bio: 'Administratorul Moldovan Lux și contactul direct pentru evaluarea, organizarea și livrarea proiectelor software.',
+  },
+] as const
+
+export const audiences = ['IMM-uri', 'Startup-uri SaaS', 'Echipe enterprise'] as const
 
 export const nav: NavItem[] = [
   { label: 'Acasă', to: '/' },
@@ -49,7 +47,6 @@ export const legalNav: NavItem[] = [
  */
 export const serverNav: NavItem[] = [
   { label: 'Cont client', to: '/cont' },
-  { label: 'Administrare', to: '/admin' },
 ]
 
 /** Toate rutele valide ale site-ului — folosită și de testul de linkuri moarte. */
@@ -67,9 +64,9 @@ export type Service = {
 export const services: Service[] = [
   {
     id: 'aplicatii-web',
-    title: 'Aplicații web pe măsură',
+    title: 'Aplicații cloud pe măsură',
     summary:
-      'Platforme interne, portaluri pentru clienți și dashboard-uri care înlocuiesc fișierele Excel și procesele manuale.',
+      'Platforme interne, portaluri pentru clienți și aplicații care înlocuiesc fișierele Excel și procesele manuale.',
     detail:
       'Pornim de la fluxul real de lucru, nu de la un template. Modelăm datele, definim rolurile și permisiunile, apoi construim interfața peste un API documentat. Livrăm în incremente funcționale, ca să folosiți aplicația înainte să fie „gata” complet.',
     deliverables: [
@@ -125,6 +122,21 @@ export const services: Service[] = [
     ],
     stack: ['Audit', 'CI/CD', 'Teste', 'Monitorizare'],
   },
+  {
+    id: 'cloud',
+    title: 'Livrare și operare în cloud',
+    summary:
+      'Publicăm și operăm aplicații pe infrastructură proprie, cu procese clare de actualizare, monitorizare și recuperare.',
+    detail:
+      'Pregătim aplicația pentru producție, separăm mediile de test și producție și automatizăm livrările. Configurăm jurnalizarea, monitorizarea, copiile de siguranță și procedurile de restaurare, astfel încât operarea să nu depindă de intervenții improvizate.',
+    deliverables: [
+      'Mediu de test și mediu de producție separate',
+      'Deploy automat și procedură de revenire',
+      'Monitorizare, alerte și jurnalizare',
+      'Backup verificat și documentație de restaurare',
+    ],
+    stack: ['Linux', 'Containere', 'CI/CD', 'Monitorizare'],
+  },
 ]
 
 export type ProcessStep = { title: string; body: string; duration: string }
@@ -162,21 +174,39 @@ export type Project = {
   motif: 'dash' | 'phone' | 'flow'
   problem: string
   approach: string
+  result?: string
+  kind: 'real' | 'demo'
+  href?: string
   stack: string[]
 }
 
-/**
- * Studii de capabilitate construite intern, folosite pentru demonstrații.
- * NU sunt proiecte de client și nu conțin date reale — vezi nota afișată în pagină.
- */
+/** Un produs real urmat de studii de capabilitate marcate ca demonstrații. */
 export const projects: Project[] = [
+  {
+    id: 'contabo',
+    tone: 'lime',
+    motif: 'dash',
+    title: 'Contabo — contabilitate completă în cloud',
+    category: 'SaaS',
+    glyph: '01',
+    kind: 'real',
+    href: 'https://contabo.space/',
+    problem:
+      'Documentele, facturarea, registrele și raportarea unei firme ajung ușor în aplicații și pași separați, greu de urmărit fără experiență contabilă.',
+    approach:
+      'O platformă online care grupează documentele primite și emise, e-Factura, banca și casa, balanța, TVA-ul, stocurile, salariile și rapoartele într-un flux ghidat.',
+    result:
+      'Produs SaaS funcțional, disponibil public, cu înscriere de firmă și moduri demo distincte pentru patron și contabil.',
+    stack: ['SaaS', 'Cloud', 'e-Factura'],
+  },
   {
     id: 'flux-comenzi',
     tone: 'coral',
     motif: 'dash',
     title: 'Panou de urmărire a comenzilor',
     category: 'Aplicații web',
-    glyph: '01',
+    glyph: '02',
+    kind: 'demo',
     problem:
       'Comenzile ajung din trei surse diferite, iar starea reală există doar într-un fișier partajat.',
     approach:
@@ -189,7 +219,8 @@ export const projects: Project[] = [
     motif: 'flow',
     title: 'Extragere de date din documente',
     category: 'AI aplicat',
-    glyph: '02',
+    glyph: '03',
+    kind: 'demo',
     problem:
       'Facturile primite pe e-mail sunt introduse manual în sistemul contabil.',
     approach:
@@ -202,7 +233,8 @@ export const projects: Project[] = [
     motif: 'flow',
     title: 'Sincronizare de stoc între sisteme',
     category: 'Integrări',
-    glyph: '03',
+    glyph: '04',
+    kind: 'demo',
     problem:
       'Stocul din magazinul online rămâne în urma stocului din depozit.',
     approach:
@@ -215,7 +247,8 @@ export const projects: Project[] = [
     motif: 'dash',
     title: 'Portal pentru clienți',
     category: 'Aplicații web',
-    glyph: '04',
+    glyph: '05',
+    kind: 'demo',
     problem:
       'Clienții sună pentru informații care ar putea fi disponibile permanent.',
     approach:
@@ -228,7 +261,8 @@ export const projects: Project[] = [
     motif: 'dash',
     title: 'Raportare operațională',
     category: 'Integrări',
-    glyph: '05',
+    glyph: '06',
+    kind: 'demo',
     problem:
       'Raportul de luni dimineață se face manual, din patru exporturi.',
     approach:
@@ -241,7 +275,8 @@ export const projects: Project[] = [
     motif: 'phone',
     title: 'Aplicație pentru echipe de teren',
     category: 'Mobil',
-    glyph: '06',
+    glyph: '07',
+    kind: 'demo',
     problem:
       'Echipa completează formulare pe hârtie, iar datele ajung în sistem după câteva zile.',
     approach:
@@ -264,7 +299,7 @@ export const principles: Principle[] = [
   },
   {
     title: 'Codul vă aparține',
-    body: 'Repository, infrastructură, conturi: totul este pe numele dumneavoastră de la început. Nu construim dependență artificială de noi.',
+    body: 'Repository-ul, codul și documentația vă aparțin de la început. Găzduirea pe infrastructura noastră sau în mediul dumneavoastră este o alegere separată, explicită în propunere.',
   },
   {
     title: 'Fără magie nedocumentată',
@@ -287,7 +322,7 @@ export const faq: { q: string; a: string }[] = [
   },
   {
     q: 'Cine deține codul și infrastructura?',
-    a: 'Dumneavoastră. Lucrăm în repository-ul și în conturile dumneavoastră de cloud ori de câte ori este posibil, iar la final predăm toate accesele.',
+    a: 'Codul și documentația vă aparțin. Aplicația poate rula pe infrastructura noastră administrată sau în mediul dumneavoastră, în funcție de cerințele proiectului; alegerea și costurile sunt scrise în propunere.',
   },
   {
     q: 'Ce se întâmplă după lansare?',
@@ -297,10 +332,10 @@ export const faq: { q: string; a: string }[] = [
 
 /** Capabilități afișate în banda de sub hero. */
 export const capabilities = [
-  'Aplicații web',
+  'Aplicații cloud',
+  'Produse SaaS',
   'Integrări API',
   'Automatizări',
   'AI aplicat',
   'Mentenanță',
-  'Livrare în cloud',
 ]

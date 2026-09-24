@@ -15,14 +15,14 @@ describe('rutare', () => {
   it('afișează pagina principală', () => {
     renderAt('/')
     expect(
-      screen.getByRole('heading', { level: 1, name: /munca manuală/i }),
+      screen.getByRole('heading', { level: 1, name: /din excel/i }),
     ).toBeInTheDocument()
   })
 
   it('afișează pagina de servicii', () => {
     renderAt('/servicii')
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      /patru direcții/i,
+      /cinci direcții/i,
     )
   })
 
@@ -62,7 +62,7 @@ describe('rutare', () => {
 })
 
 describe('pagina de confidențialitate', () => {
-  it('este accesibilă din subsol și se marchează ca draft', async () => {
+  it('este accesibilă din subsol și identifică operatorul', async () => {
     const user = userEvent.setup()
     renderAt('/')
 
@@ -70,6 +70,6 @@ describe('pagina de confidențialitate', () => {
     await user.click(within(footer).getByRole('link', { name: /confidențialitate/i }))
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/ce date colectăm/i)
-    expect(screen.getByText(/document în lucru/i)).toBeInTheDocument()
+    expect(screen.getByText(/operatorul este MOLDOVAN LUX S\.R\.L\./i)).toBeInTheDocument()
   })
 })

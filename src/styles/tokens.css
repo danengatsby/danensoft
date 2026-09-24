@@ -37,6 +37,13 @@
   --c-error: #a3221a;
   --c-error-soft: #f9e7e5;
 
+  --c-code-text: #486170;
+  --c-code-keyword: #7042a0;
+  --c-code-function: #9b4d18;
+  --c-code-string: #176b58;
+  --c-code-comment: #68747b;
+  --code-bg-opacity: 0.12;
+
   --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
   --font-serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
@@ -61,7 +68,7 @@
   --s-7: 3rem;
   --s-8: 4rem;
   --s-9: 6rem;
-  --s-section: clamp(4rem, 9vw, 8rem);
+  --s-section: clamp(2.75rem, 5.5vw, 5rem);
 
   --w-page: 80rem;
   --w-prose: 34rem;
@@ -108,6 +115,13 @@
   --c-warn-rule: #4b3d1f;
   --c-error: #f79191;
   --c-error-soft: #2b1518;
+
+  --c-code-text: #93a9c7;
+  --c-code-keyword: #c6a0f6;
+  --c-code-function: #f0ad75;
+  --c-code-string: #79cfae;
+  --c-code-comment: #8292aa;
+  --code-bg-opacity: 0.13;
 
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow-md: 0 24px 70px rgb(0 0 0 / 0.55);

@@ -5,9 +5,12 @@ import {
   type CSSProperties,
   type FormEvent,
 } from 'react'
+import { Link } from 'react-router-dom'
 import { company, services } from '../content/site'
 import {
   mailtoHref,
+  MESSAGE_MAX_LENGTH,
+  MESSAGE_TOO_LONG,
   validate,
   type ContactErrors as Errors,
   type ContactValues as Values,
@@ -48,7 +51,12 @@ export default function ContactForm() {
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     setValues((previous) => ({ ...previous, [field]: event.target.value }))
-    setErrors((previous) => ({ ...previous, [field]: undefined }))
+    setErrors((previous) => ({
+      ...previous,
+      [field]: field === 'message' && event.target.value.length > MESSAGE_MAX_LENGTH
+        ? MESSAGE_TOO_LONG
+        : undefined,
+    }))
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -84,7 +92,13 @@ export default function ContactForm() {
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(values),
       })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      if (!response.ok) {
+        if (response.status === 422) {
+          const details = await response.json().catch(() => null)
+          if (typeof details?.error === 'string') throw new Error(details.error)
+        }
+        throw new Error(`HTTP ${response.status}`)
+      }
       setStatus({ kind: 'sent' })
       setValues(EMPTY)
     } catch (error) {
@@ -199,7 +213,8 @@ export default function ContactForm() {
           </label>
           <p className="field__hint" id="message-hint">
             Ce proces vă consumă timp astăzi, cine îl folosește și ce sisteme sunt
-            implicate. Detaliile ajută la un răspuns concret.
+            implicate. Detaliile ajută la un răspuns concret. Minimum 20 și maximum
+            5.000 de caractere.
           </p>
           <textarea
             id="message"
@@ -208,10 +223,15 @@ export default function ContactForm() {
             onChange={update('message')}
             aria-invalid={Boolean(errors.message)}
             aria-describedby={
-              errors.message ? 'message-hint message-error' : 'message-hint'
+              errors.message
+                ? 'message-hint message-count message-error'
+                : 'message-hint message-count'
             }
             required
           />
+          <p className="field__hint" id="message-count">
+            {values.message.length} / {MESSAGE_MAX_LENGTH} caractere
+          </p>
           {errors.message && (
             <p className="field__error" id="message-error">
               {errors.message}
@@ -232,6 +252,10 @@ export default function ContactForm() {
             Răspundem în maximum două zile lucrătoare.
           </span>
         </div>
+        <p className="field__hint">
+          Folosim datele doar pentru a răspunde solicitării. Detalii în{' '}
+          <Link to="/confidentialitate">nota de confidențialitate</Link>.
+        </p>
       </form>
 
       <div role="status" aria-live="polite">

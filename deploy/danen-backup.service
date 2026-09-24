@@ -1,5 +1,5 @@
 [Unit]
-Description=Danen Soft Studio - copie de siguranta a bazei de mesaje
+Description=Moldovan Lux - copie de siguranta a bazei de mesaje
 Documentation=file:///var/www/danen/scripts/backup.mjs
 After=network.target
 

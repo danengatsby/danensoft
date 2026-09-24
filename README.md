@@ -1,7 +1,7 @@
-# Danen Soft Studio — site de prezentare
+# Moldovan Lux — site de prezentare
 
-Site de prezentare pentru un studio de software: React + Vite + TypeScript, cinci
-pagini reale, navigație accesibilă, formular de contact validat.
+Site de prezentare pentru aplicații cloud și produse SaaS: React + Vite +
+TypeScript, pagini prerandate, navigație accesibilă și formular de contact validat.
 
 ## Rulare
 
@@ -13,12 +13,13 @@ npm run dev        # server de dezvoltare
 | Comandă             | Ce face                                  |
 | ------------------- | ---------------------------------------- |
 | `npm run dev`       | Server local cu reîncărcare la salvare   |
-| `npm run build`     | Verificare de tipuri + build de producție|
+| `npm run build`     | Verificare de tipuri + build + prerandare HTML |
 | `npm run preview`   | Servește build-ul din `dist/`            |
 | `npm run lint`      | ESLint                                   |
 | `npm run typecheck` | Verificare de tipuri, fără emitere       |
 | `npm test`          | Vitest                                   |
 | `npm run qa`        | Verificare în Chromium; acceptă o adresă: `npm run qa -- https://danenachesoft.space` |
+| `npm run og:render` | Regenerează imaginea socială PNG din sursa SVG |
 | `npm run csp:hash`  | Recalculează hash-ul CSP după modificarea scriptului din `index.html` |
 | `npm run backup`    | Copie de siguranță imediată a bazei de mesaje |
 
@@ -29,38 +30,31 @@ distanță: `git remote add origin …` când există unde.
 
 | Rută         | Conținut                                                            |
 | ------------ | ------------------------------------------------------------------- |
-| `/`          | Poziționare, servicii pe scurt, mod de lucru, principii             |
-| `/servicii`  | Cele patru servicii, cu livrabile și tehnologii, plus întrebări      |
-| `/proiecte`  | Studii de capabilitate, filtrabile după categorie                    |
-| `/despre`    | Mod de lucru, ce nu promitem, proces, principii                      |
+| `/`          | Poziționare cloud/SaaS, servicii, proiect real și contact             |
+| `/servicii`  | Cele cinci servicii, cu livrabile și tehnologii, plus întrebări      |
+| `/proiecte`  | Produsul Contabo și demonstrații filtrabile după categorie           |
+| `/despre`    | Echipa, mod de lucru, proces și principii                            |
 | `/contact`   | Date de contact și formular validat                                  |
-| `/confidentialitate` | Notă de confidențialitate (draft, link doar în subsol)       |
+| `/confidentialitate` | Notă de confidențialitate, link doar în subsol               |
 | orice altceva| Pagină 404 cu rutele principale                                      |
 
 Verificările rulate și limitele lor sunt în [QUALITY-REPORT.md](QUALITY-REPORT.md).
 
-## Ce trebuie completat înainte de publicare
+## Identitate și indexare
 
-Toate datele de identitate și de contact sunt **placeholder** și se editează
-dintr-un singur fișier: [`src/content/site.ts`](src/content/site.ts).
+Identitatea și conținutul comercial se editează din
+[`src/content/site.ts`](src/content/site.ts). Sunt configurate denumirea Moldovan
+Lux, datele juridice, adresa de contact, administratorul și proiectul Contabo.
 
-- `company.name` / `company.initials` — numele „Danen Soft Studio” a fost derivat din
-  calea proiectului; înlocuiți-l cu denumirea reală.
-- `company.email`, `company.phone` — valori de exemplu, neapărat de înlocuit.
-- `company.legal` — denumire legală, CUI, Reg. Com.
-- `social` — linkurile duc momentan către paginile principale ale rețelelor.
+- Telefonul și profilurile sociale nu sunt afișate, fiindcă nu au fost furnizate.
+- Nota de confidențialitate descrie comportamentul tehnic și identifică operatorul,
+  dar trebuie revizuită juridic înainte de a fi tratată ca document final.
+- `robots.txt`, sitemap-ul, canonical, Open Graph, Twitter Card și JSON-LD sunt
+  configurate pentru domeniul `danenachesoft.space`.
 
-De asemenea:
-
-- `index.html` conține `noindex, nofollow` cât timp datele sunt demonstrative —
-  ștergeți linia la publicarea pe domeniul final.
-- Nota de confidențialitate (`src/content/privacy.ts`) descrie corect
-  comportamentul tehnic, dar trebuie revizuită juridic și completată cu datele
-  operatorului și cu numele furnizorului ales pentru formular.
-
-Site-ul nu conține nume de clienți, testimoniale, certificări sau cifre de
-rezultat. Elementele din `/proiecte` sunt marcate explicit în pagină drept
-exemple interne, nu lucrări de client.
+Site-ul nu inventează testimoniale, certificări sau cifre de rezultat. Contabo
+este marcat drept produs real și trimite la aplicația publică; restul cardurilor
+sunt marcate explicit drept demonstrații interne.
 
 ## Formularul de contact
 
@@ -90,9 +84,9 @@ Site-ul rulează la **https://danenachesoft.space** (HTTP redirectează automat)
 | Certificat | Let's Encrypt, reînnoit automat de `certbot.timer` |
 | Adresă internă de rezervă | `http://159.69.200.202:8090` |
 
-Build-ul produce fișiere statice în `dist/`. Fiind o aplicație cu rutare pe
-client, serverul întoarce `index.html` pentru rutele necunoscute, altfel accesul
-direct la `/servicii` ar da 404. Un exemplu comentat de configurație este în
+Build-ul produce în `dist/` șase pagini publice prerandate și `404.html`.
+nginx servește paginile valide inclusiv la acces direct, iar pentru adresele
+inexistente afișează pagina de eroare cu status HTTP 404. Un exemplu comentat de configurație este în
 [`deploy/nginx.conf.example`](deploy/nginx.conf.example).
 
 După orice modificare de conținut: `npm run build`. nginx servește direct din
@@ -107,7 +101,7 @@ face nicio cerere către terți.
 
 Tema implicită este cea deschisă (hârtie caldă). Comutatorul din antet schimbă
 în tema întunecată (albastru închis) și salvează alegerea în `localStorage`, sub
-cheia `danen-theme`. Un script scurt din `index.html` aplică tema înainte de prima
+cheia `moldovan-lux-theme`. Un script scurt din `index.html` aplică tema înainte de prima
 randare, ca să nu apară o sclipire de temă greșită la încărcare.
 
 ## Mesajele din formular

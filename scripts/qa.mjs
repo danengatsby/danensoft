@@ -18,13 +18,13 @@ const BASE = process.argv[2] ?? 'http://127.0.0.1:8090'
 const OUT = 'qa-screens'
 
 const ROUTES = [
-  ['acasa', '/'],
-  ['servicii', '/servicii'],
-  ['proiecte', '/proiecte'],
-  ['despre', '/despre'],
-  ['contact', '/contact'],
-  ['confidentialitate', '/confidentialitate'],
-  ['404', '/ruta-inexistenta'],
+  ['acasa', '/', 200],
+  ['servicii', '/servicii', 200],
+  ['proiecte', '/proiecte', 200],
+  ['despre', '/despre', 200],
+  ['contact', '/contact', 200],
+  ['confidentialitate', '/confidentialitate', 200],
+  ['404', '/ruta-inexistenta', 404],
 ]
 
 const WIDTHS = [360, 768, 1024, 1440]
@@ -49,23 +49,30 @@ for (const theme of THEMES) {
     })
     // Preferința de temă este citită din localStorage la încărcare.
     await context.addInitScript(
-      (value) => window.localStorage.setItem('danen-theme', value),
+      (value) => window.localStorage.setItem('moldovan-lux-theme', value),
       theme,
     )
 
-    for (const [name, route] of ROUTES) {
+    for (const [name, route, expectedStatus] of ROUTES) {
       const page = await context.newPage()
       const where = `${theme} ${width}px ${route}`
 
       const consoleErrors = []
       page.on('console', (message) => {
+        // Chromium raportează și statusul documentului 404 în consolă.
+        // Ignorăm doar acest răspuns așteptat, nu resursele lipsă sau erorile JS.
+        if (
+          expectedStatus === 404 &&
+          message.location().url === BASE + route &&
+          message.text().startsWith('Failed to load resource: the server responded with a status of 404')
+        ) return
         if (message.type() === 'error') consoleErrors.push(message.text())
       })
       page.on('pageerror', (error) => consoleErrors.push(`pageerror: ${error.message}`))
 
       const response = await page.goto(BASE + route, { waitUntil: 'networkidle' })
-      if (!response || !response.ok()) {
-        note('http', where, `status ${response ? response.status() : 'fără răspuns'}`)
+      if (!response || response.status() !== expectedStatus) {
+        note('http', where, `status ${response ? response.status() : 'fără răspuns'}, așteptat ${expectedStatus}`)
       }
 
       // Overflow orizontal: documentul nu trebuie să fie mai lat decât fereastra.
@@ -89,6 +96,8 @@ for (const theme of THEMES) {
       if (applied !== theme) note('temă', where, `aplicat "${applied}"`)
 
       const axe = await new AxeBuilder({ page })
+        // Fragmentele de cod sunt decor pur, marcate aria-hidden și intenționat estompate.
+        .exclude('.code-backdrop')
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
         .analyze()
       const serious = axe.violations.filter((v) =>
@@ -115,6 +124,8 @@ for (const theme of THEMES) {
         theme,
         width,
         route,
+        status: response?.status() ?? null,
+        expectedStatus,
         overflow: Boolean(overflow),
         axeSerious: serious.length,
         consoleErrors: consoleErrors.length,

@@ -1,5 +1,34 @@
 # Raport de verificare
 
+## Actualizare — 20 septembrie 2026
+
+Corecții verificate și activate în producție:
+
+- Sesiunile sunt verificate și curățate folosind același format ISO UTC,
+  inclusiv la milisecunda exactă a expirării.
+- Mesajele de peste 5.000 de caractere sunt respinse cu explicație în formular
+  și cu HTTP 422 în API; mesajele acceptate sunt salvate integral.
+- JSON-ul cu structură invalidă primește 400, iar câmpurile cu tip incorect
+  primesc 422. Cookie-urile deteriorate sunt ignorate și deconectarea fără
+  cookie funcționează. Un Host sau URL invalid primește 400 fără oprirea Node.
+- Exemplul nginx include rutele pentru conturi și administrare, cu politici
+  CSP separate de site-ul static.
+- Build-ul generează șase pagini publice și `404.html`. nginx servește pagina
+  de eroare cu HTTP 404, păstrând URL-ul cerut, pe HTTPS și pe portul 8090.
+
+Validare: 95 de teste în 6 fișiere, lint, TypeScript și build trecute.
+QA-ul pe build-ul final, într-o instanță nginx temporară cu antetele din
+depozit, a verificat 56 de combinații de rută, lățime și temă fără probleme.
+După publicare, verificările HTTPS au confirmat răspunsurile 404 pentru GET și
+HEAD, paginile valide, rutarea conturilor și navigarea din pagina de eroare.
+Pagina 404 a fost verificată și fără JavaScript. Cazurile API au fost testate
+pe baze temporare; verificările din producție nu au creat conturi sau mesaje.
+
+Auditul dependențelor de mai jos este istoric; nu a fost rerulat în această
+sesiune.
+
+## Verificarea anterioară — 15 august 2026
+
 Data verificării: 15 august 2026 (după revizuirea de securitate)
 Versiune verificată: build-ul de producție servit la `https://danenachesoft.space`
 
@@ -179,13 +208,13 @@ etichetă pentru fiecare câmp de formular.
 
 ## Limitări intenționate ale site-ului
 
-- Formularul nu are endpoint configurat; funcționează demonstrativ și declară
-  acest lucru în interfață. Vezi `.env.example`.
-- Identitatea și datele de contact sunt placeholder, marcate în
-  `src/content/site.ts`.
-- Nota de confidențialitate este un draft tehnic corect, dar neverificat
-  juridic și fără datele reale ale operatorului.
-- Indexarea este blocată prin `noindex, nofollow` cât timp conținutul este
-  demonstrativ.
-- Datele de contact din site sunt încă placeholder, iar indexarea este blocată
-  până la înlocuirea lor.
+- Formularul are endpoint-ul `/api/contact` configurat în build-ul de producție;
+  modul demonstrativ rămâne disponibil numai când variabila este eliminată.
+- Identitatea Moldovan Lux, datele juridice și adresa de contact sunt completate.
+  Telefonul și profilurile sociale nu se afișează, nefiind furnizate.
+- Nota de confidențialitate identifică operatorul și descrie comportamentul
+  tehnic, dar rămâne de revizuit juridic.
+- Indexarea este permisă. Există sitemap, robots.txt, canonical, metadate sociale,
+  JSON-LD și HTML prerandat pentru cele șase rute publice.
+- Contabo este prezentat ca produs real; celelalte proiecte rămân marcate drept
+  demonstrații, fără cifre sau testimoniale inventate.

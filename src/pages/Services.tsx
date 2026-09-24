@@ -3,23 +3,23 @@ import PageIntro from '../components/PageIntro'
 import SectionHead from '../components/SectionHead'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { serviceIcons } from '../components/serviceIcons'
-import { ArrowRight, ArrowUpRight } from '../components/Icons'
+import { ArrowRight, ArrowUpRight, CheckIcon } from '../components/Icons'
 import { faq, services } from '../content/site'
 
 export default function Services() {
   usePageMeta(
     'Servicii',
-    'Aplicații web pe măsură, integrări și automatizări, funcționalități cu AI aplicate și preluarea proiectelor existente.',
+    'Aplicații cloud, integrări și automatizări, AI aplicat, mentenanță și operare pe infrastructură proprie.',
   )
 
   return (
     <>
       <PageIntro
         eyebrow="Servicii"
-        note="Web · Integrări · AI · Mentenanță"
+        note="Cloud · SaaS · Integrări · AI · Mentenanță"
         title={
           <>
-            Patru direcții, <em>un singur criteriu.</em>
+            Cinci direcții, <em>impact măsurabil.</em>
           </>
         }
         description="Fiecare serviciu include ce livrăm concret și tehnologiile pe care le folosim de obicei. Alegerea finală depinde de sistemele pe care le aveți deja."
@@ -48,8 +48,19 @@ export default function Services() {
                       <p>{service.summary}</p>
                     </div>
                     <div>
-                      <h3>Ce livrăm</h3>
+                      <h3>Cum lucrăm</h3>
                       <p>{service.detail}</p>
+                    </div>
+                    <div>
+                      <h3>Primiți concret</h3>
+                      <ul className="service-deliverables">
+                        {service.deliverables.map((item) => (
+                          <li key={item}>
+                            <CheckIcon />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
                   <ul className="tag-row">
@@ -111,7 +122,8 @@ export default function Services() {
               recomandăm o alternativă.
             </p>
           </div>
-          <Link to="/contact" className="round-cta" aria-label="Scrieți-ne">
+          <Link to="/contact" className="round-cta">
+            <span>Discutăm proiectul</span>
             <ArrowUpRight />
           </Link>
         </div>

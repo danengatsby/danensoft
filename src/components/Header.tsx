@@ -70,7 +70,7 @@ export default function Header() {
             Cont
           </a>
           <Link to="/contact" className="btn btn--dark">
-            Cere o ofertă <ArrowUpRight />
+            Discutăm proiectul <ArrowUpRight />
           </Link>
         </nav>
 

@@ -18,8 +18,8 @@ export default function Footer() {
               </span>
             </Link>
             <p className="site-footer__statement">
-              Construim software clar pentru procese care nu mai încap în foi de
-              calcul.
+              Aplicații cloud și produse SaaS pentru procese care nu mai încap în
+              foi de calcul.
             </p>
           </div>
 
@@ -54,11 +54,13 @@ export default function Footer() {
                 <li>
                   <a href={`mailto:${company.email}`}>{company.email}</a>
                 </li>
-                <li>
-                  <a href={`tel:${company.phone.replace(/\s/g, '')}`}>
-                    {company.phone}
-                  </a>
-                </li>
+                {company.phone && (
+                  <li>
+                    <a href={`tel:${company.phone.replace(/\s/g, '')}`}>
+                      {company.phone}
+                    </a>
+                  </li>
+                )}
                 <li className="muted">{company.location}</li>
                 {social.map((item) => (
                   <li key={item.href}>
@@ -76,7 +78,7 @@ export default function Footer() {
           <span>
             © {new Date().getFullYear()} {company.name} · {company.legal}
           </span>
-          <span>Aplicații web · Integrări · AI aplicat · Mentenanță</span>
+          <span>Aplicații cloud · SaaS · Integrări · Mentenanță</span>
         </div>
       </div>
     </footer>

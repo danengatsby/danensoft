@@ -15,20 +15,21 @@ export default function Privacy() {
     <>
       <PageIntro
         eyebrow="Confidențialitate"
-        note={`Draft · actualizat ${privacyUpdated}`}
+        note={`Actualizat ${privacyUpdated}`}
         title={
           <>
             Ce date colectăm și <em>ce facem cu ele.</em>
           </>
         }
-        description="Textul descrie corect ce face site-ul din punct de vedere tehnic, dar nu a fost verificat juridic și nu conține încă datele reale ale operatorului."
+        description="Cum folosim datele trimise prin formular, ce informații păstrăm și cum ne puteți contacta pentru exercitarea drepturilor."
       />
 
       <section className="section">
         <div className="wrap wrap--narrow">
           <p className="notice">
-            <strong>Document în lucru.</strong> Trebuie revizuit de un consultant
-            înainte de publicarea pe domeniul final.
+            <strong>Notă.</strong> Textul descrie funcționarea tehnică actuală a
+            site-ului și datele operatorului; pentru utilizare juridică trebuie
+            revizuit de un consultant.
           </p>
 
           {privacySections.map((section) => (

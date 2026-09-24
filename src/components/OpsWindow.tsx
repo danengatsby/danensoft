@@ -1,6 +1,5 @@
 /**
- * Machetă conceptuală de panou operațional, desenată în HTML și CSS.
- * Cifrele sunt ilustrative; nu provin dintr-un sistem real.
+ * Reprezentare ilustrativă a unor funcții din Contabo, desenată în HTML și CSS.
  */
 const BARS = [38, 54, 46, 72, 63, 82, 66]
 const DAYS = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
@@ -10,10 +9,10 @@ export default function OpsWindow() {
     <div
       className="ops"
       role="img"
-      aria-label="Machetă conceptuală a unui panou operațional, cu indicatori și un grafic săptămânal. Cifrele sunt ilustrative."
+      aria-label="Reprezentare ilustrativă a panoului Contabo, cu documente, e-Factura și raportare."
     >
       <div className="ops__rail" aria-hidden="true">
-        <span>D</span>
+        <span>C</span>
         <i />
         <i />
         <i />
@@ -22,34 +21,34 @@ export default function OpsWindow() {
       <div className="ops__main" aria-hidden="true">
         <div className="ops__head">
           <div>
-            <small>PANOU</small>
-            <strong>Centru operațional</strong>
+            <small>CONTABO</small>
+            <strong>Situația firmei</strong>
           </div>
           <span>AZI · 08:42</span>
         </div>
 
         <div className="ops__stats">
           <div>
-            <small>DE REVIZUIT</small>
-            <strong>12</strong>
-            <span>+3 noi</span>
+            <small>DOCUMENTE</small>
+            <strong>PDF</strong>
+            <span>citire asistată</span>
           </div>
           <div>
-            <small>ÎN FLUX</small>
-            <strong>28</strong>
-            <span>stabil</span>
+            <small>E-FACTURA</small>
+            <strong>XML</strong>
+            <span>emitere</span>
           </div>
           <div>
-            <small>BLOCATE</small>
-            <strong>04</strong>
-            <span>atenție</span>
+            <small>RAPOARTE</small>
+            <strong>TVA</strong>
+            <span>balanță</span>
           </div>
         </div>
 
         <div className="ops__chart">
           <div className="ops__chart-head">
-            <span>VOLUM SĂPTĂMÂNAL</span>
-            <span>7 ZILE</span>
+            <span>VENITURI / CHELTUIELI</span>
+            <span>PREVIZIUNE</span>
           </div>
           <div className="ops__bars">
             {BARS.map((height, index) => (

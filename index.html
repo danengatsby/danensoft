@@ -4,20 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href="https://danenachesoft.space/" />
     <meta name="color-scheme" content="light dark" />
-    <!--
-      Cât timp site-ul conține date de identitate demonstrative, îl ținem în
-      afara motoarelor de căutare. Ștergeți linia de mai jos la publicarea
-      pe domeniul final, după completarea datelor reale.
-    -->
-    <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="#f1eee7" />
     <script>
       // Aplică tema salvată înainte de prima randare, ca să nu apară
-      // o sclipire de temă greșită. Implicit: întunecat.
+      // o sclipire de temă greșită. Implicit: deschis.
       ;(function () {
         try {
-          var stored = localStorage.getItem('danen-theme')
+          var stored = localStorage.getItem('moldovan-lux-theme')
           var theme = stored === 'light' || stored === 'dark' ? stored : 'light'
           document.documentElement.dataset.theme = theme
           document.documentElement.style.colorScheme = theme
@@ -26,18 +21,55 @@
         }
       })()
     </script>
-    <title>Danen Soft Studio · Aplicații web, integrări și automatizări</title>
+    <title>Moldovan Lux · Aplicații cloud și produse SaaS</title>
     <meta
       name="description"
-      content="Studio de produs software: aplicații web pe măsură, integrări între sisteme și automatizări pentru companii care au depășit foile de calcul."
+      content="Aplicații cloud, produse SaaS și integrări pentru IMM-uri, startup-uri și echipe enterprise. Dezvoltare și operare pe infrastructură proprie."
     />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ro_RO" />
-    <meta property="og:title" content="Danen Soft Studio · Studio de produs software" />
+    <meta property="og:site_name" content="Moldovan Lux" />
+    <meta property="og:url" content="https://danenachesoft.space/" />
+    <meta property="og:title" content="Moldovan Lux · Aplicații cloud și produse SaaS" />
     <meta
       property="og:description"
-      content="Aplicații web pe măsură, integrări între sisteme și automatizări. Cod și infrastructură în proprietatea clientului."
+      content="Construim aplicații cloud, produse SaaS și integrări pentru procese care nu mai încap în foi de calcul."
     />
+    <meta property="og:image" content="https://danenachesoft.space/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Moldovan Lux — aplicații cloud și produse SaaS" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Moldovan Lux · Aplicații cloud și produse SaaS" />
+    <meta
+      name="twitter:description"
+      content="Aplicații cloud, produse SaaS și integrări pentru procese care nu mai încap în foi de calcul."
+    />
+    <meta name="twitter:image" content="https://danenachesoft.space/og-image.png" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": ["Organization", "ProfessionalService"],
+        "name": "MOLDOVAN LUX S.R.L.",
+        "alternateName": "Moldovan Lux",
+        "url": "https://danenachesoft.space/",
+        "email": "moldovanlux@gmail.com",
+        "taxID": "30342978",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Iași",
+          "addressCountry": "RO"
+        },
+        "areaServed": "RO",
+        "knowsAbout": [
+          "Aplicații cloud",
+          "Produse SaaS",
+          "Integrări API",
+          "Automatizări software",
+          "Mentenanță software"
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

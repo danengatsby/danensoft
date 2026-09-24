@@ -9,7 +9,7 @@ import { projectCategories, projects } from '../content/site'
 export default function Portfolio() {
   usePageMeta(
     'Proiecte',
-    'Studii de capabilitate: probleme concrete de business și modul în care le rezolvăm tehnic.',
+    'Un produs SaaS real și demonstrații de capabilitate pentru aplicații cloud, integrări, AI și mobil.',
   )
 
   const [filter, setFilter] = useState('Toate')
@@ -26,22 +26,21 @@ export default function Portfolio() {
     <>
       <PageIntro
         eyebrow="Proiecte"
-        note="Toate exemplele sunt ilustrative"
+        note="Produs real · demonstrații marcate distinct"
         title={
           <>
             Capabilitatea se vede <em>mai bine în context.</em>
           </>
         }
-        description="Mai jos sunt studii de capabilitate construite intern: problema de la care se pornește și abordarea tehnică pe care o aplicăm."
+        description="Începem cu un produs SaaS funcțional, urmat de demonstrații interne care arată tipurile de probleme pe care le putem aborda."
       />
 
       <section className="section">
         <div className="wrap">
           <p className="notice" style={{ maxWidth: '60ch', marginBottom: 'var(--s-6)' }}>
-            <strong>Notă.</strong> Acestea sunt exemple realizate intern, nu lucrări
-            de client, și nu conțin date reale. Nu publicăm nume de clienți, cifre de
-            rezultat sau recomandări pe care nu le putem susține. Referințe
-            verificabile pot fi furnizate la cerere, cu acordul clienților respectivi.
+            <strong>Cum citim portofoliul.</strong> Contabo este un produs real,
+            disponibil public. Cardurile marcate „Demonstrație” sunt studii interne,
+            nu lucrări de client, și nu conțin date reale sau rezultate inventate.
           </p>
 
           <ul className="filter-bar" aria-label="Filtrare după categorie">
@@ -73,7 +72,10 @@ export default function Portfolio() {
               <li key={project.id}>
                 <article className={`work-card tone-${project.tone}`}>
                   <div className="work-card__meta">
-                    <span>{project.category}</span>
+                    <span>
+                      {project.kind === 'real' ? 'Proiect real' : 'Demonstrație'} ·{' '}
+                      {project.category}
+                    </span>
                     <span>{project.glyph}</span>
                   </div>
                   <div className="work-card__visual">
@@ -86,6 +88,11 @@ export default function Portfolio() {
                   <p>
                     <strong>Abordarea.</strong> {project.approach}
                   </p>
+                  {project.result && (
+                    <p>
+                      <strong>Rezultatul.</strong> {project.result}
+                    </p>
+                  )}
                   <ul className="tag-row">
                     {project.stack.map((item) => (
                       <li key={item} className="tag">
@@ -93,6 +100,16 @@ export default function Portfolio() {
                       </li>
                     ))}
                   </ul>
+                  {project.href && (
+                    <a
+                      className="work-card__link"
+                      href={project.href}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    >
+                      Explorează produsul <ArrowUpRight />
+                    </a>
+                  )}
                 </article>
               </li>
             ))}
@@ -112,7 +129,8 @@ export default function Portfolio() {
               exemplul general și de ce.
             </p>
           </div>
-          <Link to="/contact" className="round-cta" aria-label="Spuneți-ne despre proiect">
+          <Link to="/contact" className="round-cta">
+            <span>Discutăm proiectul</span>
             <ArrowUpRight />
           </Link>
         </div>

@@ -1,16 +1,15 @@
 /**
- * Recalculează hash-ul scriptului inline din `dist/index.html`, cel folosit în
+ * Recalculează hash-urile scripturilor inline din `dist/index.html`, folosite în
  * politica de securitate a conținutului din nginx.
  *
  *   npm run build && npm run csp:hash
  *
- * Rulați-l după orice modificare a scriptului de temă din `index.html` și
- * puneți valoarea afișată în `/etc/nginx/snippets/danen-csp.conf`, apoi:
+ * Rulați-l după orice modificare a scripturilor din `index.html` și puneți
+ * valorile afișate în `/etc/nginx/snippets/danen-csp.conf`, apoi:
  *
  *   nginx -t && systemctl reload nginx
  *
- * Fără actualizare, browserul blochează scriptul: site-ul funcționează, dar
- * reapare sclipirea de temă greșită la încărcare.
+ * Fără actualizare, browserul blochează scripturile inline.
  */
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'

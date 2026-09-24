@@ -1,5 +1,5 @@
 [Unit]
-Description=Danen Soft Studio - API contact si administrare mesaje
+Description=Moldovan Lux - API contact si administrare mesaje
 After=network.target
 
 [Service]

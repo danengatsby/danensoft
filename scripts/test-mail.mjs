@@ -23,7 +23,7 @@ const to = process.argv[2]
 if (to) {
   const result = await sendMail({
     to,
-    subject: 'Test SMTP · Danen Soft Studio',
+    subject: 'Test SMTP · Moldovan Lux',
     text: 'Dacă ați primit acest mesaj, configurarea SMTP funcționează.',
   })
   console.log(result.error ? `Trimitere eșuată: ${result.error}` : `Trimis către ${to}.`)

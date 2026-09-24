@@ -1,6 +1,6 @@
 export type Theme = 'light' | 'dark'
 
-export const THEME_KEY = 'danen-theme'
+export const THEME_KEY = 'moldovan-lux-theme'
 
 /** Tema implicită a site-ului, folosită când nu există o alegere salvată. */
 export const DEFAULT_THEME: Theme = 'light'

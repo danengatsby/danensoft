@@ -72,6 +72,15 @@ export function LayersIcon(props: IconProps) {
   )
 }
 
+export function CloudIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M7 18h10a4 4 0 0 0 .7-7.94A6 6 0 0 0 6.24 8.5 4.5 4.5 0 0 0 7 18Z" />
+      <path d="m9 13 3-3 3 3m-3-3v6" />
+    </svg>
+  )
+}
+
 export function MailIcon(props: IconProps) {
   return (
     <svg {...base} {...props}>

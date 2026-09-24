@@ -5,25 +5,28 @@ import OpsWindow from '../components/OpsWindow'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { serviceIcons } from '../components/serviceIcons'
 import { ArrowRight, ArrowUpRight, CheckIcon } from '../components/Icons'
-import { capabilities, principles, process, services } from '../content/site'
+import { capabilities, projects, services } from '../content/site'
+
+const featuredProject = projects[0]
 
 export default function Home() {
   usePageMeta(
-    'Aplicații web, integrări și automatizări',
-    'Studio de produs software: aplicații web pe măsură, integrări între sisteme și automatizări pentru companii care au depășit foile de calcul.',
+    'Aplicații cloud, produse SaaS și automatizări',
+    'Moldovan Lux construiește aplicații cloud, produse SaaS și integrări pentru IMM-uri, startup-uri și echipe enterprise.',
   )
 
   return (
     <>
       <section className="wrap hero">
         <div>
-          <p className="eyebrow">Studio de produs software</p>
+          <p className="eyebrow">Aplicații cloud și produse SaaS</p>
           <h1>
-            Software care înlocuiește <em>munca manuală.</em>
+            Aplicații cloud care scot operațiunile <em>din Excel.</em>
           </h1>
           <p className="hero__lead">
-            Construim aplicații web, integrări între sisteme și automatizări pentru
-            companii care au depășit foile de calcul și instrumentele neconectate.
+            Construim platforme web, produse SaaS și integrări pentru IMM-uri,
+            startup-uri și echipe enterprise care vor procese conectate și control
+            asupra datelor.
           </p>
           <div className="btn-row">
             <Link to="/contact" className="btn btn--primary">
@@ -46,20 +49,64 @@ export default function Home() {
               <b>02</b>
               <span>
                 Livrăm în incremente funcționale, cu o versiune accesibilă în mediu
-                de test din prima săptămână de dezvoltare.
+                de test încă din primele etape de dezvoltare.
               </span>
             </li>
             <li>
               <b>03</b>
               <span>
-                Codul, infrastructura și documentația rămân în conturile
-                dumneavoastră, de la început.
+                Codul și documentația vă aparțin; aplicația poate rula pe
+                infrastructura noastră administrată sau în mediul dumneavoastră.
               </span>
             </li>
           </ul>
         </div>
 
         <SystemDiagram />
+      </section>
+
+      <section className="section band">
+        <div className="wrap split">
+          <div>
+            <p className="eyebrow">Proiect real · produs SaaS</p>
+            <h2 className="h-section" style={{ marginBlock: 'var(--s-4) var(--s-5)' }}>
+              Contabo. <em>Contabilitate completă în cloud.</em>
+            </h2>
+            <p style={{ maxWidth: '38ch', lineHeight: 1.75 }}>
+              {featuredProject.approach} Reprezentarea alăturată este ilustrativă;
+              produsul funcțional poate fi explorat direct.
+            </p>
+            <ul className="checklist" style={{ marginBlock: 'var(--s-6)' }}>
+              <li>
+                <CheckIcon />
+                <span>Documente primite și emise într-un singur flux</span>
+              </li>
+              <li>
+                <CheckIcon />
+                <span>e-Factura, bancă, casă, balanță și TVA</span>
+              </li>
+              <li>
+                <CheckIcon />
+                <span>Moduri de lucru distincte pentru patron și contabil</span>
+              </li>
+            </ul>
+            <div className="btn-row">
+              <a
+                href={featuredProject.href}
+                className="btn btn--secondary"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                Explorează produsul <ArrowUpRight />
+              </a>
+              <Link to="/proiecte" className="text-link">
+                Vezi portofoliul <ArrowRight />
+              </Link>
+            </div>
+          </div>
+
+          <OpsWindow />
+        </div>
       </section>
 
       <div className="capability-band">
@@ -74,7 +121,7 @@ export default function Home() {
         <div className="wrap">
           <SectionHead eyebrow="Servicii" title={<>Ce construim</>}>
             <p>
-              Patru direcții de lucru. Cele mai multe proiecte încep cu una și se
+              Cinci direcții de lucru. Cele mai multe proiecte încep cu una și se
               extind spre celelalte pe măsură ce sistemul crește.
             </p>
           </SectionHead>
@@ -102,99 +149,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="section band">
-        <div className="wrap split">
-          <div>
-            <p className="eyebrow">Concept de capabilitate</p>
-            <h2 className="h-section" style={{ marginBlock: 'var(--s-4) var(--s-5)' }}>
-              Un singur tablou. <em>Mai puține presupuneri.</em>
-            </h2>
-            <p style={{ maxWidth: '38ch', lineHeight: 1.75 }}>
-              Exemplu conceptual de panou care aduce comenzile, excepțiile și
-              acțiunile într-o interfață comună. Nu este captura unui produs livrat.
-            </p>
-            <ul className="checklist" style={{ marginBlock: 'var(--s-6)' }}>
-              <li>
-                <CheckIcon />
-                <span>Priorități vizibile pentru fiecare rol</span>
-              </li>
-              <li>
-                <CheckIcon />
-                <span>Automatizări cu puncte clare de control uman</span>
-              </li>
-              <li>
-                <CheckIcon />
-                <span>Istoric complet al deciziilor</span>
-              </li>
-            </ul>
-            <Link to="/proiecte" className="btn btn--secondary">
-              Vezi exemplele <ArrowRight />
-            </Link>
-          </div>
-
-          <OpsWindow />
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="wrap">
-          <SectionHead
-            eyebrow="Mod de lucru"
-            title={
-              <>
-                Un proiect previzibil se recunoaște <em>devreme.</em>
-              </>
-            }
-          >
-            <p>
-              Nu promitem certitudini pe care nimeni nu le poate susține la începutul
-              unui proiect software. Facem progresul vizibil suficient de devreme
-              încât deciziile costisitoare să fie luate cu informații reale.
-            </p>
-          </SectionHead>
-
-          <ol className="process">
-            {process.map((step, index) => (
-              <li key={step.title}>
-                <span className="process__num" aria-hidden="true">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <div className="process__body">
-                  <p className="mono-sm">{step.duration}</p>
-                  <h3>{step.title}</h3>
-                  <p>{step.body}</p>
-                </div>
-                <b className="process__tag">{step.duration}</b>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <section className="section" style={{ paddingTop: 0 }}>
-        <div className="wrap">
-          <SectionHead eyebrow="Principii" title={<>Ce puteți cere de la noi</>}>
-            <p>
-              Angajamente de lucru, nu promisiuni de marketing. Dacă vreunul dintre
-              ele nu este respectat, aveți un motiv întemeiat să ne întrerupeți
-              colaborarea.
-            </p>
-          </SectionHead>
-
-          <div className="columns">
-            {principles.map((principle, index) => (
-              <article key={principle.title}>
-                <span className="columns__num">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <h3>{principle.title}</h3>
-                <p>{principle.body}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section className="wrap">
         <div className="cta-band">
           <div>
@@ -203,7 +157,8 @@ export default function Home() {
               Aveți un proces care a devenit <em>prea important</em> pentru Excel?
             </h2>
           </div>
-          <Link to="/contact" className="round-cta" aria-label="Discutați proiectul">
+          <Link to="/contact" className="round-cta">
+            <span>Discutăm proiectul</span>
             <ArrowUpRight />
           </Link>
         </div>

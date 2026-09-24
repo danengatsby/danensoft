@@ -117,7 +117,14 @@ function cookies(req) {
       .split(';')
       .map((part) => part.trim().split('='))
       .filter(([key]) => key)
-      .map(([key, ...rest]) => [key, decodeURIComponent(rest.join('='))]),
+      .flatMap(([key, ...rest]) => {
+        try {
+          return [[key, decodeURIComponent(rest.join('='))]]
+        } catch {
+          // Un cookie deteriorat este ignorat, fără a invalida celelalte cookie-uri.
+          return []
+        }
+      }),
   )
 }
 
@@ -174,6 +181,7 @@ function sameOrigin(req) {
 }
 
 const clean = (value, max) => String(value ?? '').trim().slice(0, max)
+const MESSAGE_MAX_LENGTH = 5000
 
 function validate(payload) {
   const values = {
@@ -181,23 +189,31 @@ function validate(payload) {
     email: clean(payload.email, 200),
     organisation: clean(payload.organisation, 160),
     topic: clean(payload.topic, 120),
-    message: clean(payload.message, 5000),
+    // Mesajul se păstrează integral; depășirea limitei este o eroare de validare.
+    message: String(payload.message ?? ''),
   }
 
   const errors = []
   if (values.name.length < 2) errors.push('name')
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(values.email)) errors.push('email')
-  if (values.message.length < 20) errors.push('message')
+  if (values.message.trim().length < 20 || values.message.length > MESSAGE_MAX_LENGTH) {
+    errors.push('message')
+  }
 
   return { values, errors }
 }
 
 const server = createServer(async (req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host ?? 'localhost'}`)
-  const path = url.pathname
-  const ip = clientIp(req)
-
   try {
+    let url
+    try {
+      url = new URL(req.url, `http://${req.headers.host ?? 'localhost'}`)
+    } catch {
+      return send(res, 400, 'Adresă invalidă.')
+    }
+    const path = url.pathname
+    const ip = clientIp(req)
+
     // ── API public ───────────────────────────────────────────────────────────
     if (path === '/api/contact' && req.method === 'POST') {
       if (!contactLimit(ip)) {
@@ -215,11 +231,28 @@ const server = createServer(async (req, res) => {
         return json(res, 400, { error: 'Corp invalid.' })
       }
 
+      if (payload === null || typeof payload !== 'object' || Array.isArray(payload)) {
+        return json(res, 400, { error: 'Corp invalid.' })
+      }
+
+      const invalidTypes = ['name', 'email', 'organisation', 'topic', 'message', 'website']
+        .filter((field) => payload[field] !== undefined && typeof payload[field] !== 'string')
+      if (invalidTypes.length) {
+        return json(res, 422, { error: 'Câmpurile trebuie să conțină text.', fields: invalidTypes })
+      }
+
       // Capcana pentru roboți: răspundem cu succes, dar nu salvăm nimic.
       if (clean(payload.website, 10)) return json(res, 200, { ok: true })
 
       const { values, errors } = validate(payload)
-      if (errors.length) return json(res, 422, { error: 'Date invalide.', fields: errors })
+      if (errors.length) {
+        return json(res, 422, {
+          error: values.message.length > MESSAGE_MAX_LENGTH
+            ? 'Mesajul poate avea cel mult 5.000 de caractere.'
+            : 'Date invalide.',
+          fields: errors,
+        })
+      }
 
       const account = currentUser(req)
       messages.add(values, account?.id ?? null)

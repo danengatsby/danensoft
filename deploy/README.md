@@ -1,6 +1,7 @@
 # Configurația de sistem
 
-Fișierele de aici sunt **copii** ale configurației care rulează pe server.
+Fișierele de aici sunt **copii** ale configurației care rulează pe server și un
+**model nginx** pentru instalare.
 Sistemul citește din `/etc`, nu din depozit, deci o modificare făcută aici nu
 are niciun efect până nu este copiată la locul ei.
 
@@ -21,6 +22,16 @@ Ce **nu** este aici, intenționat:
 - `/etc/danen/api.env` — conține secrete (parola SMTP). Rămâne doar pe server.
 - `/etc/nginx/sites-available/danenachesoft` — are căi de certificate scrise de
   certbot, specifice mașinii. `nginx.conf.example` acoperă partea care contează.
+
+Modelul trimite `/api/`, `/cont` (potrivire exactă), `/cont/` și `/admin…` către
+serviciul Node de pe `127.0.0.1:8091`. `/contact` rămâne o pagină statică.
+Blocurile proxy includ antetele comune de securitate; paginile Node își trimit
+propria politică CSP, fără politica suplimentară a site-ului static.
+
+Build-ul generează paginile publice și `dist/404.html`. nginx folosește
+`try_files $uri $uri/ =404` și servește intern `404.html` pentru fișierele sau
+paginile inexistente, păstrând statusul HTTP 404 și adresa cerută. Publicați
+build-ul înainte de activarea acestei configurații.
 
 ## După modificare
 

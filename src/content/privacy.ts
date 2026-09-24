@@ -3,20 +3,19 @@
  *
  * ⚠ Textul de mai jos descrie corect comportamentul tehnic al acestui site,
  *    dar NU este un document juridic verificat. Înainte de publicare trebuie
- *    revizuit de un consultant și completat cu datele reale ale operatorului
- *    (denumire, sediu, CUI, responsabil cu protecția datelor dacă e cazul).
+ *    revizuit de un consultant înainte de publicarea ca document juridic final.
  */
 
 export type PrivacySection = { title: string; body: string[] }
 
-export const privacyUpdated = '14 august 2026'
+export const privacyUpdated = '15 august 2026'
 
 export const privacySections: PrivacySection[] = [
   {
     title: 'Cine prelucrează datele',
     body: [
-      'Operatorul este compania identificată în subsolul site-ului. Datele de identificare legală sunt momentan neconfigurate și trebuie completate înainte de publicare.',
-      'Pentru orice întrebare legată de datele dumneavoastră, ne puteți scrie la adresa de e-mail din pagina de contact.',
+      'Operatorul este MOLDOVAN LUX S.R.L., cu sediul în Iași, CUI 30342978, înregistrată la Registrul Comerțului sub nr. J22/1026/21.06.2012.',
+      'Pentru orice întrebare legată de datele dumneavoastră, ne puteți scrie la moldovanlux@gmail.com.',
     ],
   },
   {
@@ -53,7 +52,7 @@ export const privacySections: PrivacySection[] = [
     title: 'Cookie-uri, analiză și servicii externe',
     body: [
       'Site-ul public nu folosește cookie-uri, nu are instrumente de analiză a traficului și nu încarcă fonturi, hărți sau scripturi de la terți. Nicio pagină nu face cereri către alte domenii. Zona de administrare, accesibilă doar nouă, folosește un cookie de sesiune strict necesar pentru autentificare.',
-      'Singura informație salvată local este preferința dumneavoastră pentru tema deschisă sau întunecată, păstrată în `localStorage` sub cheia `danen-theme`. Rămâne în browser, nu ne este transmisă și dispare când ștergeți datele site-ului.',
+      'Singura informație salvată local este preferința dumneavoastră pentru tema deschisă sau întunecată, păstrată în `localStorage` sub cheia `moldovan-lux-theme`. Rămâne în browser, nu ne este transmisă și dispare când ștergeți datele site-ului.',
       'Serverul care găzduiește site-ul înregistrează, ca orice server web, adresa IP și pagina accesată, în jurnale tehnice folosite pentru funcționare și securitate.',
     ],
   },

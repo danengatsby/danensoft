@@ -3,25 +3,25 @@ import PageIntro from '../components/PageIntro'
 import SectionHead from '../components/SectionHead'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { ArrowUpRight, CheckIcon } from '../components/Icons'
-import { company, principles, process } from '../content/site'
+import { audiences, company, principles, process, team } from '../content/site'
 
 export default function About() {
   usePageMeta(
     'Despre',
-    'Cum lucrăm, ce ne asumăm și ce nu promitem. Un studio performant, cu contact direct între client și echipa de dezvoltare.',
+    'Moldovan Lux este un studio software din Iași, coordonat de Enache Dan, pentru aplicații cloud și produse SaaS.',
   )
 
   return (
     <>
       <PageIntro
         eyebrow="Despre"
-        note="Echipă performantă · răspundere directă"
+        note="Iași · studio software independent"
         title={
           <>
-            Un studio performant, cu <em>răspundere directă.</em>
+            Răspundere directă, <em>de la idee la producție.</em>
           </>
         }
-        description={`${company.foundedNote} Discutați despre arhitectură, termene și compromisuri cu persoanele care implementează, nu cu un intermediar.`}
+        description={`${company.foundedNote} Discuțiile despre scop, termene și compromisuri nu trec prin straturi comerciale inutile.`}
       />
 
       <section className="section section--tight">
@@ -29,21 +29,56 @@ export default function About() {
           <ul className="facts">
             <li>
               <span className="facts__label">Mod de lucru</span>
-              <span className="facts__value">Remote, UTC+2/+3</span>
+              <span className="facts__value">Iași · remote</span>
             </li>
             <li>
-              <span className="facts__label">Limbi de lucru</span>
-              <span className="facts__value">Română, engleză</span>
+              <span className="facts__label">Clienți</span>
+              <span className="facts__value">{audiences.join(' · ')}</span>
             </li>
             <li>
-              <span className="facts__label">Proprietatea codului</span>
-              <span className="facts__value">A clientului</span>
+              <span className="facts__label">Operare cloud</span>
+              <span className="facts__value">Infrastructură proprie</span>
             </li>
             <li>
               <span className="facts__label">Timp de răspuns</span>
               <span className="facts__value">2 zile lucrătoare</span>
             </li>
           </ul>
+        </div>
+      </section>
+
+      <section className="section" style={{ paddingTop: 0 }}>
+        <div className="wrap">
+          <SectionHead
+            eyebrow="Echipă"
+            title={
+              <>
+                Știți cu cine <em>discutați.</em>
+              </>
+            }
+          >
+            <p>
+              Același contact rămâne implicat de la evaluarea inițială până la
+              lansare și operare.
+            </p>
+          </SectionHead>
+          <div className="team-grid">
+            {team.map((member) => (
+              <article className="team-card" key={member.name}>
+                <span className="team-card__mark" aria-hidden="true">
+                  {member.name
+                    .split(' ')
+                    .map((part) => part[0])
+                    .join('')}
+                </span>
+                <div>
+                  <p className="mono-sm">{member.role}</p>
+                  <h2>ing.soft {member.name}</h2>
+                  <p>{member.bio}</p>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -157,7 +192,8 @@ export default function About() {
               Hai să facem problema <em>clară împreună.</em>
             </h2>
           </div>
-          <Link to="/contact" className="round-cta" aria-label="Începeți conversația">
+          <Link to="/contact" className="round-cta">
+            <span>Discutăm proiectul</span>
             <ArrowUpRight />
           </Link>
         </div>

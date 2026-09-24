@@ -1,4 +1,4 @@
-# Exemplu de configurare nginx pentru build-ul static din `dist/`.
+# Exemplu de configurare nginx pentru site-ul static și serviciul Node.
 # Adaptați server_name și certificatele; apoi:
 #   npm run build
 #
@@ -11,10 +11,11 @@
 
 server {
     listen 80;
-    server_name exemplu.ro www.exemplu.ro;   # PLACEHOLDER
+    server_name danenachesoft.space www.danenachesoft.space;
 
     root /var/www/danen/dist;
     index index.html;
+    error_page 404 /404.html;
 
     include snippets/danen-headers.conf;
     include snippets/danen-csp.conf;
@@ -33,10 +34,51 @@ server {
         include snippets/danen-headers.conf;
     }
 
-    # Rutare pe client: orice adresă necunoscută primește index.html,
-    # altfel accesul direct la /servicii ar da 404.
+    # Conturile sunt randate de Node. /cont are potrivire exactă pentru a nu
+    # intercepta pagina publică /contact; /cont/ acoperă acțiunile contului.
+    location = /cont {
+        proxy_pass http://127.0.0.1:8091;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        include snippets/danen-headers.conf;
+    }
+
+    location /cont/ {
+        proxy_pass http://127.0.0.1:8091;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        include snippets/danen-headers.conf;
+    }
+
+    # Administrare, export CSV și acțiuni asupra mesajelor, ca în configurația activă.
+    location ^~ /admin {
+        proxy_pass http://127.0.0.1:8091;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        include snippets/danen-headers.conf;
+    }
+
+    # Paginile valide au HTML prerandat; adresele inexistente păstrează statusul 404.
     location / {
-        try_files $uri $uri/ /index.html;
+        try_files $uri $uri/ =404;
+    }
+
+    # Redirecționare internă: URL-ul cerut și statusul 404 rămân în răspuns.
+    location = /404.html {
+        internal;
+        add_header Cache-Control "no-store" always;
+
+        include snippets/danen-headers.conf;
+        include snippets/danen-csp.conf;
     }
 
     # Fișierele din assets/ au hash în nume, deci pot fi memorate agresiv.

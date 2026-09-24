@@ -103,11 +103,11 @@ const q = {
     'INSERT INTO sessions (token, kind, user_id, created_at, expires_at) VALUES (?, ?, ?, ?, ?)',
   ),
   session: db.prepare(
-    "SELECT kind, user_id FROM sessions WHERE token = ? AND expires_at > datetime('now')",
+    'SELECT kind, user_id FROM sessions WHERE token = ? AND expires_at > ?',
   ),
   deleteSession: db.prepare('DELETE FROM sessions WHERE token = ?'),
   deleteUserSessions: db.prepare('DELETE FROM sessions WHERE user_id = ?'),
-  pruneSessions: db.prepare("DELETE FROM sessions WHERE expires_at <= datetime('now')"),
+  pruneSessions: db.prepare('DELETE FROM sessions WHERE expires_at <= ?'),
 }
 
 export const messages = {
@@ -150,9 +150,12 @@ export const sessions = {
       new Date(now.getTime() + hours * 3600_000).toISOString(),
     )
   },
-  get: (token) => (token ? q.session.get(token) : undefined),
-  destroy: (token) => q.deleteSession.run(token),
+  // Comparăm același format ISO UTC cu milisecunde ca la creare;
+  // datetime('now') folosește spațiu în loc de T și ar prelungi sesiunile expirate.
+  get: (token) => (token ? q.session.get(token, new Date().toISOString()) : undefined),
+  // Deconectarea rămâne validă și când cookie-ul lipsește sau a fost deja șters.
+  destroy: (token) => (token ? q.deleteSession.run(token) : undefined),
   /** Toate sesiunile unui cont — folosită la schimbarea parolei. */
   destroyForUser: (userId) => q.deleteUserSessions.run(userId),
-  prune: () => q.pruneSessions.run(),
+  prune: () => q.pruneSessions.run(new Date().toISOString()),
 }

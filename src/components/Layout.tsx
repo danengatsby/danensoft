@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
+import CodeBackdrop from './CodeBackdrop'
 import Header from './Header'
 import Footer from './Footer'
 
@@ -20,6 +21,7 @@ export default function Layout() {
 
   return (
     <div className="page">
+      <CodeBackdrop />
       <a className="skip-link" href="#continut">
         Sari la conținut
       </a>

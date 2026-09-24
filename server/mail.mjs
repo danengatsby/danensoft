@@ -10,7 +10,7 @@ import nodemailer from 'nodemailer'
  *   SMTP_PORT=587
  *   SMTP_USER=utilizator
  *   SMTP_PASS=parola-sau-cheia-api
- *   MAIL_FROM="Danen Soft Studio <contact@danenachesoft.space>"
+ *   MAIL_FROM="Moldovan Lux <moldovanlux@gmail.com>"
  *   MAIL_TO=adresa-unde-primiti-notificarile@exemplu.ro
  *
  * Portul 465 și portul 25 sunt blocate pe acest server; folosiți 587 (STARTTLS).

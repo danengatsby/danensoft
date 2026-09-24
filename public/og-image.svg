@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f1eee7"/>
+  <rect x="72" y="72" width="68" height="68" rx="34" fill="#1b1c1a"/>
+  <text x="106" y="114" text-anchor="middle" font-family="monospace" font-size="20" font-weight="700" fill="#f1eee7">ML</text>
+  <text x="164" y="120" font-family="Arial, sans-serif" font-size="42" font-weight="700" fill="#1b1c1a">Moldovan <tspan fill="#b3341f">Lux</tspan></text>
+  <text x="72" y="300" font-family="Arial, sans-serif" font-size="70" font-weight="700" fill="#1b1c1a">Aplicații cloud</text>
+  <text x="72" y="380" font-family="Georgia, serif" font-size="70" font-style="italic" fill="#b3341f">și produse SaaS.</text>
+  <text x="72" y="485" font-family="Arial, sans-serif" font-size="28" fill="#5c5b54">Software pentru procese care nu mai încap în foi de calcul.</text>
+  <rect x="1015" y="72" width="113" height="486" rx="18" fill="#1b1c1a"/>
+  <circle cx="1071" cy="144" r="13" fill="#d8f55f"/>
+  <path d="M1071 198v288M1040 229h62M1040 294h62M1040 359h62M1040 424h62" stroke="#454742" stroke-width="3"/>
+</svg>

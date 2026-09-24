@@ -1,5 +1,5 @@
 [Unit]
-Description=Danen Soft Studio - copie zilnica a bazei de mesaje
+Description=Moldovan Lux - copie zilnica a bazei de mesaje
 
 [Timer]
 # Zilnic la 03:20, ora serverului. Persistent: daca serverul era oprit la ora
