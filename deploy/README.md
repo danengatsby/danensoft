@@ -28,7 +28,7 @@ serviciul Node de pe `127.0.0.1:8091`. `/contact` rămâne o pagină statică.
 Blocurile proxy includ antetele comune de securitate; paginile Node își trimit
 propria politică CSP, fără politica suplimentară a site-ului static.
 
-Build-ul generează paginile publice și `dist/404.html`. nginx folosește
+Build-ul generează paginile publice și `.build/dist/404.html`. nginx folosește
 `try_files $uri $uri/ =404` și servește intern `404.html` pentru fișierele sau
 paginile inexistente, păstrând statusul HTTP 404 și adresa cerută. Publicați
 build-ul înainte de activarea acestei configurații.
@@ -56,3 +56,32 @@ diff deploy/nginx-snippet-csp.conf  /etc/nginx/snippets/danen-csp.conf
 
 Hash-ul din `nginx-snippet-csp.conf` depinde de scriptul inline din
 `index.html`; după orice modificare a lui, `npm run build && npm run csp:hash`.
+
+## Publicare în versiuni
+
+Configurația nginx folosește `root /var/www/danen/current` și
+`alias /var/www/danen/shared-assets/` în blocul `/assets/`.
+`npm run build` scrie numai în `.build/dist/`; `npm run deploy` pregătește
+un director nou în `releases/` și comută linkul `current` prin rename atomic.
+`npm run rollback` folosește `previous`. Verificările sunt executate după
+comutare; la eșec se restaurează ținta anterioară.
+
+## Backup extern (neactivat fără destinație)
+
+Fișiere pregătite: `backup.env.example`, `backup-ssh.conf.example`,
+`danen-backup-offsite.service`, `danen-backup-offsite.timer`.
+Nu copiați fișierele `.example` ca atare pentru activare: completați mai întâi
+gazda, directorul, cheia dedicată și amprenta verificată a serverului extern.
+
+```bash
+cp deploy/danen-backup-offsite.service deploy/danen-backup-offsite.timer /etc/systemd/system/
+systemctl daemon-reload
+systemctl start danen-backup-offsite.service
+systemctl status danen-backup-offsite.service
+# Numai după verificarea primei copii externe:
+systemctl enable --now danen-backup-offsite.timer
+```
+
+GitHub păstrează codul în `danengatsby/danensoft`; mesajele și conturile nu
+se includ în depozit. Configurația SMTP, cheia SSH și cheia certificatului
+necesită o strategie separată de păstrare a secretelor pentru refacerea serverului.

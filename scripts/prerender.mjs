@@ -3,48 +3,48 @@ import { dirname, resolve } from 'node:path'
 import { createServer } from 'vite'
 
 const ROOT = resolve(new URL('..', import.meta.url).pathname)
-const DIST = resolve(ROOT, 'dist')
+const DIST = resolve(ROOT, '.build/dist')
 
 const pages = [
   {
     path: '/',
-    title: 'Aplicații cloud, produse SaaS și automatizări · Moldovan Lux',
+    title: 'Dezvoltare software pentru afaceri · Dan Enache',
     description:
-      'Moldovan Lux construiește aplicații cloud, produse SaaS și integrări pentru IMM-uri, startup-uri și echipe enterprise.',
+      'Dan Enache: dezvoltare de aplicații web și SaaS, integrări, automatizări și operare cloud. Un partener tehnic de la analiză la mentenanță.',
   },
   {
     path: '/servicii',
-    title: 'Servicii · Moldovan Lux',
+    title: 'Servicii · Dan Enache',
     description:
       'Aplicații cloud, integrări și automatizări, AI aplicat, mentenanță și operare pe infrastructură proprie.',
   },
   {
     path: '/proiecte',
-    title: 'Proiecte · Moldovan Lux',
+    title: 'Proiecte · Dan Enache',
     description:
-      'Un produs SaaS real și demonstrații de capabilitate pentru aplicații cloud, integrări, AI și mobil.',
+      'Contabo, PCS, Poetio și RVR Taxi: proiecte reale de aplicații web, site-uri de prezentare și publicații digitale, alături de demonstrații interne.',
   },
   {
     path: '/despre',
-    title: 'Despre · Moldovan Lux',
+    title: 'Despre · Dan Enache',
     description:
-      'Moldovan Lux este un studio software din Iași, coordonat de Enache Dan, pentru aplicații cloud și produse SaaS.',
+      'Dan Enache, inginer software din Iași. Aplicații cloud, produse SaaS și colaborare directă, de la idee la lansare.',
   },
   {
     path: '/contact',
-    title: 'Contact · Moldovan Lux',
+    title: 'Contact · Dan Enache',
     description:
       'Scrieți-ne despre procesul pe care vreți să îl automatizați sau despre aplicația cloud de care aveți nevoie.',
   },
   {
     path: '/confidentialitate',
-    title: 'Confidențialitate · Moldovan Lux',
+    title: 'Confidențialitate · Dan Enache',
     description:
       'Ce date colectăm prin formularul de contact, ce facem cu ele și ce drepturi aveți.',
   },
   {
     path: '/404.html',
-    title: 'Pagină inexistentă · Moldovan Lux',
+    title: 'Pagină inexistentă · Dan Enache',
     description: 'Adresa accesată nu corespunde niciunei pagini.',
   },
 ]
@@ -75,6 +75,12 @@ const vite = await createServer({
 try {
   const template = await readFile(resolve(DIST, 'index.html'), 'utf8')
   const { render } = await vite.ssrLoadModule('/src/prerender.tsx')
+  const { publishedProjects, company } = await vite.ssrLoadModule('/src/content/site.ts')
+  pages.push(...publishedProjects.map((project) => ({
+    path: `/proiecte/${project.id}`,
+    title: `${project.title} · ${company.name}`,
+    description: project.summary ?? project.approach,
+  })))
   const output = []
 
   for (const page of pages) {

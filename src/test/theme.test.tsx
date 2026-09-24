@@ -19,35 +19,35 @@ beforeEach(() => {
 })
 
 describe('comutator zi/noapte', () => {
-  it('pornește pe tema deschisă când nu există o preferință salvată', () => {
+  it('pornește pe tema întunecată când nu există o preferință salvată', () => {
     renderApp()
-    expect(document.documentElement.dataset.theme).toBe('light')
+    expect(document.documentElement.dataset.theme).toBe('dark')
   })
 
-  it('comută pe tema întunecată și înapoi', async () => {
+  it('comută pe tema deschisă și înapoi', async () => {
     const user = userEvent.setup()
     renderApp()
 
-    await user.click(screen.getByRole('button', { name: /comută pe tema întunecată/i }))
-    expect(document.documentElement.dataset.theme).toBe('dark')
-
     await user.click(screen.getByRole('button', { name: /comută pe tema deschisă/i }))
     expect(document.documentElement.dataset.theme).toBe('light')
+
+    await user.click(screen.getByRole('button', { name: /comută pe tema întunecată/i }))
+    expect(document.documentElement.dataset.theme).toBe('dark')
   })
 
   it('salvează preferința și o reîncarcă la următoarea vizită', async () => {
     const user = userEvent.setup()
     const first = renderApp()
 
-    await user.click(screen.getByRole('button', { name: /comută pe tema întunecată/i }))
-    expect(localStorage.getItem(THEME_KEY)).toBe('dark')
+    await user.click(screen.getByRole('button', { name: /comută pe tema deschisă/i }))
+    expect(localStorage.getItem(THEME_KEY)).toBe('light')
 
     first.unmount()
     renderApp()
 
-    expect(document.documentElement.dataset.theme).toBe('dark')
+    expect(document.documentElement.dataset.theme).toBe('light')
     expect(
-      screen.getByRole('button', { name: /comută pe tema deschisă/i }),
+      screen.getByRole('button', { name: /comută pe tema întunecată/i }),
     ).toBeInTheDocument()
   })
 
@@ -55,8 +55,8 @@ describe('comutator zi/noapte', () => {
     const user = userEvent.setup()
     renderApp()
 
-    expect(document.documentElement.style.colorScheme).toBe('light')
-    await user.click(screen.getByRole('button', { name: /comută pe tema întunecată/i }))
     expect(document.documentElement.style.colorScheme).toBe('dark')
+    await user.click(screen.getByRole('button', { name: /comută pe tema deschisă/i }))
+    expect(document.documentElement.style.colorScheme).toBe('light')
   })
 })

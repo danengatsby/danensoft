@@ -1,0 +1,11 @@
+[Unit]
+Description=Dan Enache - backup extern zilnic
+
+[Timer]
+OnCalendar=*-*-* 03:45:00
+RandomizedDelaySec=15m
+Persistent=yes
+Unit=danen-backup-offsite.service
+
+[Install]
+WantedBy=timers.target

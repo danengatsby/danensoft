@@ -1,33 +1,12 @@
+import { useLanguage } from '../hooks/useLanguage'
 import { Link } from 'react-router-dom'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { ArrowRight } from '../components/Icons'
-import { nav } from '../content/site'
 
 export default function NotFound() {
+  const { t } = useLanguage()
   usePageMeta('Pagină inexistentă', 'Adresa accesată nu corespunde niciunei pagini.')
-
   return (
-    <div className="wrap notfound">
-      <p className="eyebrow">404 · rută necunoscută</p>
-      <h1>
-        Pagina aceasta <em>nu există.</em>
-      </h1>
-      <p className="prose">
-        Probabil adresa a fost scrisă greșit sau pagina a fost mutată. Puteți relua
-        din secțiunile de mai jos.
-      </p>
-      <ul className="tag-row" style={{ gap: 'var(--s-3)', marginTop: 'var(--s-3)' }}>
-        {nav.map((item) => (
-          <li key={item.to}>
-            <Link to={item.to} className="btn btn--secondary">
-              {item.label}
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <Link to="/" className="text-link">
-        Înapoi acasă <ArrowRight />
-      </Link>
-    </div>
+    <section className="wrap error-page"><div className="error-panel"><span className="error-code">404</span><p className="eyebrow">{t("Pagina nu a fost găsită")}</p><h1>{t("Pagina aceasta nu există.")}</h1><p>{t("Verificați adresa sau continuați către una dintre secțiunile principale.")}</p><Link to="/" className="btn btn--primary">{t("Înapoi acasă ")}<ArrowRight /></Link><div className="error-links">{[['/servicii', 'Servicii software'], ['/proiecte', 'Proiecte publicate'], ['/contact', 'Contact']].map(([to, label]) => <Link to={to} key={to}>{t(label)}<ArrowRight /></Link>)}</div></div></section>
   )
 }

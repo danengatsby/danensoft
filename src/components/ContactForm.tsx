@@ -1,3 +1,4 @@
+import { useLanguage } from '../hooks/useLanguage'
 import {
   useRef,
   useState,
@@ -31,7 +32,7 @@ type Status =
   | { kind: 'pending' }
   | { kind: 'sent' }
   | { kind: 'demo'; payload: Values }
-  | { kind: 'error'; message: string }
+  | { kind: 'error'; detail?: string }
 
 const EMPTY: Values = {
   name: '',
@@ -42,6 +43,7 @@ const EMPTY: Values = {
 }
 
 export default function ContactForm() {
+  const { t } = useLanguage()
   const [values, setValues] = useState<Values>(EMPTY)
   const [errors, setErrors] = useState<Errors>({})
   const [status, setStatus] = useState<Status>({ kind: 'idle' })
@@ -104,10 +106,7 @@ export default function ContactForm() {
     } catch (error) {
       setStatus({
         kind: 'error',
-        message:
-          error instanceof Error
-            ? `Trimiterea a eșuat (${error.message}).`
-            : 'Trimiterea a eșuat.',
+        detail: error instanceof Error ? error.message : undefined,
       })
     }
   }
@@ -119,20 +118,15 @@ export default function ContactForm() {
     <div className="stack" style={{ '--flow': 'var(--s-5)' } as CSSProperties}>
       {!endpoint && (
         <p className="notice">
-          <strong>Formular în mod demonstrativ.</strong> Nu este configurat niciun
-          serviciu de trimitere, așa că mesajul nu pleacă nicăieri. Validarea
-          funcționează, iar după completare primiți un link care deschide mesajul în
-          clientul dumneavoastră de e-mail. Pentru trimitere reală, setați{' '}
-          <code>VITE_CONTACT_ENDPOINT</code>.
+          <strong>{t("Formular în mod demonstrativ.")}</strong>{t(" Nu este configurat niciun serviciu de trimitere, așa că mesajul nu pleacă nicăieri. Validarea funcționează, iar după completare primiți un link care deschide mesajul în clientul dumneavoastră de e-mail. Pentru trimitere reală, setați")}{' '}
+          <code>{t("VITE_CONTACT_ENDPOINT")}</code>.
         </p>
       )}
 
       <form className="form" onSubmit={handleSubmit} ref={formRef} noValidate>
         <div className="field-row">
           <div className="field">
-            <label className="field__label" htmlFor="name">
-              Nume și prenume
-            </label>
+            <label className="field__label" htmlFor="name">{t("Nume și prenume")}</label>
             <input
               id="name"
               name="name"
@@ -145,15 +139,13 @@ export default function ContactForm() {
             />
             {errors.name && (
               <p className="field__error" id="name-error">
-                {errors.name}
+                {t(errors.name)}
               </p>
             )}
           </div>
 
           <div className="field">
-            <label className="field__label" htmlFor="email">
-              E-mail
-            </label>
+            <label className="field__label" htmlFor="email">{t("E-mail")}</label>
             <input
               id="email"
               name="email"
@@ -167,7 +159,7 @@ export default function ContactForm() {
             />
             {errors.email && (
               <p className="field__error" id="email-error">
-                {errors.email}
+                {t(errors.email)}
               </p>
             )}
           </div>
@@ -175,8 +167,7 @@ export default function ContactForm() {
 
         <div className="field-row">
           <div className="field">
-            <label className="field__label" htmlFor="organisation">
-              Organizație <span className="muted">(opțional)</span>
+            <label className="field__label" htmlFor="organisation">{t("Organizație ")}<span className="muted">{t("(opțional)")}</span>
             </label>
             <input
               id="organisation"
@@ -188,9 +179,7 @@ export default function ContactForm() {
           </div>
 
           <div className="field">
-            <label className="field__label" htmlFor="topic">
-              Subiect
-            </label>
+            <label className="field__label" htmlFor="topic">{t("Subiect")}</label>
             <select
               id="topic"
               name="topic"
@@ -199,23 +188,17 @@ export default function ContactForm() {
             >
               {services.map((service) => (
                 <option key={service.id} value={service.title}>
-                  {service.title}
+                  {t(service.title)}
                 </option>
               ))}
-              <option value="Altceva">Altceva</option>
+              <option value="Altceva">{t("Altceva")}</option>
             </select>
           </div>
         </div>
 
         <div className="field">
-          <label className="field__label" htmlFor="message">
-            Despre ce este vorba
-          </label>
-          <p className="field__hint" id="message-hint">
-            Ce proces vă consumă timp astăzi, cine îl folosește și ce sisteme sunt
-            implicate. Detaliile ajută la un răspuns concret. Minimum 20 și maximum
-            5.000 de caractere.
-          </p>
+          <label className="field__label" htmlFor="message">{t("Despre ce este vorba")}</label>
+          <p className="field__hint" id="message-hint">{t("Ce proces vă consumă timp astăzi, cine îl folosește și ce sisteme sunt implicate. Detaliile ajută la un răspuns concret. Minimum 20 și maximum 5.000 de caractere.")}</p>
           <textarea
             id="message"
             name="message"
@@ -230,57 +213,48 @@ export default function ContactForm() {
             required
           />
           <p className="field__hint" id="message-count">
-            {values.message.length} / {MESSAGE_MAX_LENGTH} caractere
-          </p>
+            {values.message.length} / {MESSAGE_MAX_LENGTH}{t(" caractere")}</p>
           {errors.message && (
             <p className="field__error" id="message-error">
-              {errors.message}
+              {t(errors.message)}
             </p>
           )}
         </div>
 
         <div className="honeypot" aria-hidden="true">
-          <label htmlFor="website">Nu completați acest câmp</label>
+          <label htmlFor="website">{t("Nu completați acest câmp")}</label>
           <input id="website" name="website" tabIndex={-1} autoComplete="off" />
         </div>
 
         <div className="form__submit">
           <button type="submit" className="btn btn--primary" disabled={pending}>
-            {pending ? 'Se trimite…' : 'Trimite mesajul'}
+            {t(pending ? 'Se trimite…' : 'Trimite mesajul')}
           </button>
-          <span className="mono-sm" style={{ alignSelf: 'center' }}>
-            Răspundem în maximum două zile lucrătoare.
-          </span>
+          <span className="mono-sm" style={{ alignSelf: 'center' }}>{t("Răspundem în maximum două zile lucrătoare.")}</span>
         </div>
-        <p className="field__hint">
-          Folosim datele doar pentru a răspunde solicitării. Detalii în{' '}
-          <Link to="/confidentialitate">nota de confidențialitate</Link>.
+        <p className="field__hint">{t("Folosim datele doar pentru a răspunde solicitării. Detalii în")}{' '}
+          <Link to="/confidentialitate">{t("nota de confidențialitate")}</Link>.
         </p>
       </form>
 
       <div role="status" aria-live="polite">
         {status.kind === 'sent' && (
           <p className="notice notice--ok">
-            <strong>Mesaj trimis.</strong> Vă răspundem pe adresa indicată.
-          </p>
+            <strong>{t("Mesaj trimis.")}</strong>{t(" Vă răspundem pe adresa indicată.")}</p>
         )}
 
         {status.kind === 'demo' && (
           <p className="notice">
-            <strong>Datele sunt valide, dar mesajul nu a fost trimis</strong> —
-            formularul rulează în mod demonstrativ.{' '}
-            <a href={mailtoHref(status.payload)}>
-              Deschideți mesajul în clientul de e-mail
-            </a>{' '}
-            sau scrieți direct la{' '}
-            <a href={`mailto:${company.email}`}>{company.email}</a>.
+            <strong>{t("Datele sunt valide, dar mesajul nu a fost trimis")}</strong>{t(" — formularul rulează în mod demonstrativ.")}{' '}
+            <a href={mailtoHref(status.payload, t)}>{t("Deschideți mesajul în clientul de e-mail")}</a>{' '}{t("sau scrieți direct la")}{' '}
+            <a href={`mailto:${company.email}`}>{t(company.email)}</a>.
           </p>
         )}
 
         {status.kind === 'error' && (
           <p className="notice notice--error">
-            <strong>{status.message}</strong> Încercați din nou sau scrieți la{' '}
-            <a href={`mailto:${company.email}`}>{company.email}</a>.
+            <strong>{status.detail ? t('Trimiterea a eșuat ({error}).', { error: t(status.detail) }) : t('Trimiterea a eșuat.')}</strong>{t(" Încercați din nou sau scrieți la")}{' '}
+            <a href={`mailto:${company.email}`}>{t(company.email)}</a>.
           </p>
         )}
       </div>

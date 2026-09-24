@@ -1,0 +1,7 @@
+Host backup.example.com
+    IdentityFile /etc/danen/backup_ed25519
+    UserKnownHostsFile /etc/danen/backup_known_hosts
+    IdentitiesOnly yes
+    BatchMode yes
+    StrictHostKeyChecking yes
+    ConnectTimeout 15

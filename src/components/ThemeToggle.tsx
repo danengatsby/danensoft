@@ -1,6 +1,8 @@
+import { useLanguage } from '../hooks/useLanguage'
 import { useTheme } from '../hooks/useTheme'
 
 export default function ThemeToggle() {
+  const { t } = useLanguage()
   const { theme, toggle } = useTheme()
   const goingToLight = theme === 'dark'
 
@@ -10,9 +12,9 @@ export default function ThemeToggle() {
       className="icon-btn"
       onClick={toggle}
       aria-pressed={theme === 'dark'}
-      title={goingToLight ? 'Comută pe tema deschisă' : 'Comută pe tema întunecată'}
+      title={t(goingToLight ? 'Comută pe tema deschisă' : 'Comută pe tema întunecată')}
       aria-label={
-        goingToLight ? 'Comută pe tema deschisă' : 'Comută pe tema întunecată'
+        t(goingToLight ? 'Comută pe tema deschisă' : 'Comută pe tema întunecată')
       }
     >
       {goingToLight ? <SunIcon /> : <MoonIcon />}

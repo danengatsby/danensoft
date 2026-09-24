@@ -1,0 +1,26 @@
+[Unit]
+Description=Dan Enache - backup extern SQLite verificat prin restaurare
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/etc/danen/backup.env
+
+[Service]
+Type=oneshot
+User=danen
+Group=danen
+WorkingDirectory=/var/www/danen
+EnvironmentFile=/etc/danen/backup.env
+Environment=DANEN_DB=/var/lib/danen/messages.db
+Environment=DANEN_BACKUP_DIR=/var/backups/danen
+Environment=DANEN_BACKUP_KEEP=14
+ExecStart=/usr/bin/node --no-warnings /var/www/danen/scripts/backup-offsite.mjs
+TimeoutStartSec=30min
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/danen /var/backups/danen
+UMask=0077

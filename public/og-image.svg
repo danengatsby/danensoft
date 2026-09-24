@@ -1,12 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#f1eee7"/>
-  <rect x="72" y="72" width="68" height="68" rx="34" fill="#1b1c1a"/>
-  <text x="106" y="114" text-anchor="middle" font-family="monospace" font-size="20" font-weight="700" fill="#f1eee7">ML</text>
-  <text x="164" y="120" font-family="Arial, sans-serif" font-size="42" font-weight="700" fill="#1b1c1a">Moldovan <tspan fill="#b3341f">Lux</tspan></text>
-  <text x="72" y="300" font-family="Arial, sans-serif" font-size="70" font-weight="700" fill="#1b1c1a">Aplicații cloud</text>
-  <text x="72" y="380" font-family="Georgia, serif" font-size="70" font-style="italic" fill="#b3341f">și produse SaaS.</text>
-  <text x="72" y="485" font-family="Arial, sans-serif" font-size="28" fill="#5c5b54">Software pentru procese care nu mai încap în foi de calcul.</text>
-  <rect x="1015" y="72" width="113" height="486" rx="18" fill="#1b1c1a"/>
-  <circle cx="1071" cy="144" r="13" fill="#d8f55f"/>
-  <path d="M1071 198v288M1040 229h62M1040 294h62M1040 359h62M1040 424h62" stroke="#454742" stroke-width="3"/>
+<rect width="1200" height="630" fill="#f8f5f0"/>
+<path d="M64 126H1136M64 558H1136" stroke="#dcd5ca"/>
+<circle cx="86" cy="78" r="24" fill="#a4452c"/>
+<text x="83" y="87" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="28" letter-spacing="-3" fill="#fffcf8">de</text>
+<text x="126" y="87" font-family="Arial,sans-serif" font-size="27" font-weight="600" fill="#252825">Dan Enache</text>
+<text x="1136" y="83" text-anchor="end" font-family="monospace" font-size="13" letter-spacing="2" fill="#686961">INGINER SOFTWARE · IAȘI</text>
+<circle cx="927" cy="337" r="172" fill="#edbb99"/>
+<ellipse cx="927" cy="337" rx="230" ry="100" transform="rotate(-38 927 337)" fill="none" stroke="#b9a593"/>
+<circle cx="927" cy="337" r="143" fill="none" stroke="#f9e3cb"/>
+<text x="923" y="382" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="176" letter-spacing="-15" fill="#a4452c">de.</text>
+<text x="64" y="228" font-family="monospace" font-size="13" letter-spacing="2" fill="#a4452c">DE LA IDEE LA IMPACT</text>
+<text x="60" y="321" font-family="Arial,sans-serif" font-size="78" letter-spacing="-4" fill="#252825">Idei ambițioase.</text>
+<text x="60" y="414" font-family="Arial,sans-serif" font-size="78" letter-spacing="-4" fill="#252825">Software <tspan font-family="Georgia,serif" font-style="italic" fill="#a4452c">cu sens.</tspan></text>
+<text x="64" y="483" font-family="Arial,sans-serif" font-size="19" fill="#686961">Aplicații web. Produse SaaS. Automatizări.</text>
+<text x="64" y="595" font-family="monospace" font-size="13" fill="#686961">danenachesoft.space</text>
+<text x="1136" y="595" text-anchor="end" font-family="monospace" font-size="13" fill="#686961">DESIGN + DEZVOLTARE + IMPLICARE</text>
 </svg>

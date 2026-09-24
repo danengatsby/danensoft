@@ -1,5 +1,5 @@
 import { createServer } from 'node:http'
-import { messages, sessions, users, STATUSES } from './db.mjs'
+import { mailQueue, messages, sessions, users, STATUSES } from './db.mjs'
 import {
   createRateLimiter,
   hashPassword,
@@ -7,7 +7,8 @@ import {
   verifyNothing,
   verifyPassword,
 } from './auth.mjs'
-import { notifyNewMessage } from './mail.mjs'
+import { contactEmailJobs, mailConfigured, sendMail } from './mail.mjs'
+import { createMailWorker } from './mail-worker.mjs'
 import {
   CSP,
   accountLoginPage,
@@ -22,6 +23,7 @@ const HOST = process.env.HOST ?? '127.0.0.1'
 /** Setați DANEN_HTTPS=1 după activarea TLS: cookie-ul primește atunci și flagul Secure. */
 const HTTPS = process.env.DANEN_HTTPS === '1'
 const USER_COOKIE = 'danen_user'
+const mailWorker = createMailWorker({ queue: mailQueue, sendMail, isConfigured: () => mailConfigured })
 
 if (users.adminCount() === 0) {
   console.warn('[danen-api] Nu există niciun cont de administrator. Rulați: npm run admin:set -- <email>')
@@ -195,7 +197,7 @@ function validate(payload) {
 
   const errors = []
   if (values.name.length < 2) errors.push('name')
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(values.email)) errors.push('email')
+  if (!/^[^\s@<>,;:"\\]+@[^\s@<>,;:"\\]+\.[^\s@<>,;:"\\]{2,}$/.test(values.email)) errors.push('email')
   if (values.message.trim().length < 20 || values.message.length > MESSAGE_MAX_LENGTH) {
     errors.push('message')
   }
@@ -255,10 +257,10 @@ const server = createServer(async (req, res) => {
       }
 
       const account = currentUser(req)
-      messages.add(values, account?.id ?? null)
-
-      // Notificarea nu trebuie să întârzie sau să rateze răspunsul către vizitator.
-      notifyNewMessage(values, { fromAccount: account?.email }).catch(() => {})
+      messages.addWithNotifications(values, account?.id ?? null,
+        contactEmailJobs(values, { fromAccount: account?.email }))
+      // Mesajul și cele două notificări sunt deja persistate înainte de răspuns.
+      mailWorker.wake()
 
       return json(res, 201, { ok: true })
     }
@@ -279,7 +281,7 @@ const server = createServer(async (req, res) => {
       }
 
       if (path === '/admin' && req.method === 'GET') {
-        return html(res, 200, messagesPage(messages.list(), { insecure: !HTTPS }), {
+        return html(res, 200, messagesPage(messages.list(), { insecure: !HTTPS, mailConfigured }), {
           'Cache-Control': 'no-store',
         })
       }
@@ -292,13 +294,17 @@ const server = createServer(async (req, res) => {
         })
       }
 
-      const action = path.match(/^\/admin\/messages\/(\d+)\/(read|delete|status)$/)
+      const action = path.match(/^\/admin\/messages\/(\d+)\/(read|delete|status|retry-mail)$/)
       if (action && req.method === 'POST') {
         if (!sameOrigin(req)) return send(res, 403, 'Origine respinsă.')
         const id = Number(action[1])
 
         if (action[2] === 'read') messages.markRead(id)
         else if (action[2] === 'delete') messages.remove(id)
+        else if (action[2] === 'retry-mail') {
+          mailQueue.retryFailed(id)
+          mailWorker.wake()
+        }
         else {
           const status = new URLSearchParams(await readBody(req)).get('status')
           if (STATUSES.includes(status)) messages.setStatus(id, status)
@@ -465,9 +471,18 @@ const server = createServer(async (req, res) => {
 })
 
 server.listen(PORT, HOST, () => {
+  mailWorker.start()
   console.log(`[danen-api] ascult pe http://${HOST}:${PORT} · TLS declarat: ${HTTPS}`)
 })
 
 for (const signal of ['SIGINT', 'SIGTERM']) {
-  process.on(signal, () => server.close(() => process.exit(0)))
+  process.once(signal, async () => {
+    // O expediere întreruptă va fi recuperată la expirarea rezervării din coadă.
+    const deadline = setTimeout(() => process.exit(1), 45_000)
+    deadline.unref()
+    try {
+      await Promise.all([new Promise((resolve) => server.close(resolve)), mailWorker.stop()])
+      process.exit(0)
+    } catch { process.exit(1) }
+  })
 }

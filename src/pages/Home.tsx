@@ -1,168 +1,67 @@
+import { useLanguage } from '../hooks/useLanguage'
 import { Link } from 'react-router-dom'
 import SectionHead from '../components/SectionHead'
-import SystemDiagram from '../components/SystemDiagram'
-import OpsWindow from '../components/OpsWindow'
+import DeliveryOverview from '../components/DeliveryOverview'
+import PublishedProjectCard from '../components/PublishedProjectCard'
+import ProcessSteps from '../components/ProcessSteps'
+import ContactCTA from '../components/ContactCTA'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { serviceIcons } from '../components/serviceIcons'
 import { ArrowRight, ArrowUpRight, CheckIcon } from '../components/Icons'
-import { capabilities, projects, services } from '../content/site'
-
-const featuredProject = projects[0]
+import { audiences, projects } from '../content/site'
+import { commitments, serviceGroups } from '../content/presentation'
 
 export default function Home() {
-  usePageMeta(
-    'Aplicații cloud, produse SaaS și automatizări',
-    'Moldovan Lux construiește aplicații cloud, produse SaaS și integrări pentru IMM-uri, startup-uri și echipe enterprise.',
-  )
-
+  const { t } = useLanguage()
+  usePageMeta('Dezvoltare software pentru afaceri', 'Dan Enache: dezvoltare de aplicații web și SaaS, integrări, automatizări și operare cloud. Un partener tehnic de la analiză la mentenanță.')
   return (
     <>
-      <section className="wrap hero">
-        <div>
-          <p className="eyebrow">Aplicații cloud și produse SaaS</p>
-          <h1>
-            Aplicații cloud care scot operațiunile <em>din Excel.</em>
-          </h1>
-          <p className="hero__lead">
-            Construim platforme web, produse SaaS și integrări pentru IMM-uri,
-            startup-uri și echipe enterprise care vor procese conectate și control
-            asupra datelor.
-          </p>
+      <section className="wrap company-hero">
+        <div className="company-hero__copy">
+          <p className="eyebrow">{t("Dan Enache · Dezvoltare software")}</p>
+          <h1>{t("Software potrivit")}<br />{t("afacerii dumneavoastră.")}</h1>
+          <p className="company-hero__lead">{t("Dezvoltăm aplicații web, conectăm sisteme și automatizăm procese. Un partener tehnic pentru tot parcursul proiectului, de la analiză la lansare și mentenanță.")}</p>
           <div className="btn-row">
-            <Link to="/contact" className="btn btn--primary">
-              Discutăm proiectul <ArrowUpRight />
-            </Link>
-            <Link to="/servicii" className="text-link">
-              Vezi ce construim <ArrowRight />
-            </Link>
+            <Link to="/contact" className="btn btn--primary">{t("Discutăm proiectul ")}<ArrowUpRight /></Link>
+            <Link to="/proiecte" className="btn btn--secondary">{t("Proiecte realizate ")}<ArrowRight /></Link>
           </div>
-
-          <ul className="hero__points">
-            <li>
-              <b>01</b>
-              <span>
-                Lucrăm direct cu dumneavoastră — fără intermediari între cerință și
-                echipa care scrie codul.
-              </span>
-            </li>
-            <li>
-              <b>02</b>
-              <span>
-                Livrăm în incremente funcționale, cu o versiune accesibilă în mediu
-                de test încă din primele etape de dezvoltare.
-              </span>
-            </li>
-            <li>
-              <b>03</b>
-              <span>
-                Codul și documentația vă aparțin; aplicația poate rula pe
-                infrastructura noastră administrată sau în mediul dumneavoastră.
-              </span>
-            </li>
-          </ul>
+          <div className="company-hero__audiences"><span>{t("Soluții pentru")}</span>{audiences.map((item) => <span key={item}>{t(item)}</span>)}</div>
         </div>
-
-        <SystemDiagram />
+        <DeliveryOverview />
       </section>
-
-      <section className="section band">
-        <div className="wrap split">
-          <div>
-            <p className="eyebrow">Proiect real · produs SaaS</p>
-            <h2 className="h-section" style={{ marginBlock: 'var(--s-4) var(--s-5)' }}>
-              Contabo. <em>Contabilitate completă în cloud.</em>
-            </h2>
-            <p style={{ maxWidth: '38ch', lineHeight: 1.75 }}>
-              {featuredProject.approach} Reprezentarea alăturată este ilustrativă;
-              produsul funcțional poate fi explorat direct.
-            </p>
-            <ul className="checklist" style={{ marginBlock: 'var(--s-6)' }}>
-              <li>
-                <CheckIcon />
-                <span>Documente primite și emise într-un singur flux</span>
-              </li>
-              <li>
-                <CheckIcon />
-                <span>e-Factura, bancă, casă, balanță și TVA</span>
-              </li>
-              <li>
-                <CheckIcon />
-                <span>Moduri de lucru distincte pentru patron și contabil</span>
-              </li>
-            </ul>
-            <div className="btn-row">
-              <a
-                href={featuredProject.href}
-                className="btn btn--secondary"
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                Explorează produsul <ArrowUpRight />
-              </a>
-              <Link to="/proiecte" className="text-link">
-                Vezi portofoliul <ArrowRight />
-              </Link>
-            </div>
-          </div>
-
-          <OpsWindow />
-        </div>
-      </section>
-
-      <div className="capability-band">
-        <ul aria-label="Capabilități principale">
-          {capabilities.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      </div>
+      <div className="wrap"><ul className="commitment-strip">{commitments.map((item) => <li key={item.title}><CheckIcon /><div><strong>{t(item.title)}</strong><p>{t(item.body)}</p></div></li>)}</ul></div>
 
       <section className="section">
         <div className="wrap">
-          <SectionHead eyebrow="Servicii" title={<>Ce construim</>}>
-            <p>
-              Cinci direcții de lucru. Cele mai multe proiecte încep cu una și se
-              extind spre celelalte pe măsură ce sistemul crește.
-            </p>
-          </SectionHead>
-
-          <ul className="service-list">
-            {services.map((service, index) => {
-              const Icon = serviceIcons[service.id]
-              return (
-                <li key={service.id}>
-                  <Link className="service-row" to={`/servicii#${service.id}`}>
-                    <span className="service-row__index" aria-hidden="true">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <span className="service-row__icon" aria-hidden="true">
-                      <Icon />
-                    </span>
-                    <span className="service-row__title">{service.title}</span>
-                    <span className="service-row__text">{service.summary}</span>
-                    <ArrowUpRight className="service-row__arrow" />
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
+          <SectionHead eyebrow={t("Servicii")} title={t("Expertiză organizată în jurul nevoilor afacerii.")}><p>{t("Dezvoltare, conectare și operare. Fiecare arie are livrabile și un proces de lucru clar.")}</p></SectionHead>
+          <div className="solution-groups">{serviceGroups.map((group, index) => {
+            const Icon = serviceIcons[group.services[0].id]
+            return <article className="solution-group" key={group.title}>
+              <div className="solution-group__top"><span className="business-icon"><Icon /></span><span className="mono-sm">0{index + 1}</span></div>
+              <h3>{t(group.title)}</h3><p>{t(group.description)}</p>
+              <ul>{group.services.map((service) => <li key={service.id}><Link to={`/servicii#${service.id}`}>{t(service.title)}<ArrowUpRight /></Link></li>)}</ul>
+            </article>
+          })}</div>
+          <div className="section-footer"><span>{t("Livrabile, tehnologii și răspunsuri la întrebări.")}</span><Link to="/servicii" className="text-link">{t("Toate serviciile ")}<ArrowRight /></Link></div>
         </div>
       </section>
 
-      <section className="wrap">
-        <div className="cta-band">
-          <div>
-            <p className="eyebrow">Următorul pas</p>
-            <h2 style={{ marginTop: 'var(--s-4)' }}>
-              Aveți un proces care a devenit <em>prea important</em> pentru Excel?
-            </h2>
-          </div>
-          <Link to="/contact" className="round-cta">
-            <span>Discutăm proiectul</span>
-            <ArrowUpRight />
-          </Link>
+      <section className="section section--surface">
+        <div className="wrap">
+          <SectionHead eyebrow={t("Portofoliu")} title={t("Proiecte publicate. Soluții concrete.")}><p>{t("De la problema inițială la soluția realizată. Descoperiți povestea fiecărui proiect.")}</p></SectionHead>
+          <ul className="published-grid published-grid--overview">{projects.filter((project) => project.kind === 'real').map((project) => <li key={project.id}><PublishedProjectCard project={project} /></li>)}</ul>
+          <div className="section-footer"><span>{t("Descoperiți proiectele și demonstrațiile de capabilitate.")}</span><Link to="/proiecte" className="text-link">{t("Portofoliul complet ")}<ArrowRight /></Link></div>
         </div>
       </section>
+
+      <section className="section">
+        <div className="wrap">
+          <SectionHead eyebrow={t("Mod de lucru")} title={t("Un proces previzibil, de la discuție la livrare.")}><p>{t("Știți ce se construiește, ce primiți și care este următorul pas.")}</p></SectionHead>
+          <ProcessSteps />
+          <div className="section-footer"><span>{t("Colaborare directă cu Dan Enache, inginer software.")}</span><Link to="/despre" className="text-link">{t("Despre colaborare ")}<ArrowRight /></Link></div>
+        </div>
+      </section>
+      <ContactCTA />
     </>
   )
 }

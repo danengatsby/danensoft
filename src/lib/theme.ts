@@ -1,9 +1,9 @@
 export type Theme = 'light' | 'dark'
 
-export const THEME_KEY = 'moldovan-lux-theme'
+export const THEME_KEY = 'dan-enache-theme'
 
 /** Tema implicită a site-ului, folosită când nu există o alegere salvată. */
-export const DEFAULT_THEME: Theme = 'light'
+export const DEFAULT_THEME: Theme = 'dark'
 
 export function isTheme(value: unknown): value is Theme {
   return value === 'light' || value === 'dark'

@@ -15,7 +15,7 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 
 const SNIPPET = '/etc/nginx/snippets/danen-csp.conf'
-const html = readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8')
+const html = readFileSync(new URL('../.build/dist/index.html', import.meta.url), 'utf8')
 
 const inline = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)]
 if (inline.length === 0) {

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { AppRoutes } from '../App'
-import { allRoutes } from '../content/site'
+import { allRoutes, projectRoutes } from '../content/site'
 
 const ROUTES = [
   '/',
@@ -11,6 +11,7 @@ const ROUTES = [
   '/contact',
   '/confidentialitate',
   '/404-test',
+  ...projectRoutes.map((route) => route.to),
 ]
 const KNOWN_PATHS = new Set(allRoutes.map((item) => item.to))
 

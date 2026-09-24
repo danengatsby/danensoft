@@ -15,14 +15,14 @@ describe('rutare', () => {
   it('afișează pagina principală', () => {
     renderAt('/')
     expect(
-      screen.getByRole('heading', { level: 1, name: /din excel/i }),
+      screen.getByRole('heading', { level: 1, name: /software potrivit/i }),
     ).toBeInTheDocument()
   })
 
   it('afișează pagina de servicii', () => {
     renderAt('/servicii')
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      /cinci direcții/i,
+      /servicii software/i,
     )
   })
 
@@ -41,7 +41,7 @@ describe('rutare', () => {
     await user.click(within(primaryNav).getByRole('link', { name: 'Contact' }))
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      /spuneți-ne ce trebuie construit/i,
+      /să discutăm despre proiectul dumneavoastră/i,
     )
   })
 

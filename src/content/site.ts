@@ -3,9 +3,9 @@
 export type NavItem = { label: string; to: string }
 
 export const company = {
-  name: 'Moldovan Lux',
+  name: 'Dan Enache',
   legalName: 'MOLDOVAN LUX S.R.L.',
-  initials: 'ML',
+  initials: 'DE',
   tagline: 'Aplicații cloud și produse SaaS',
   email: 'moldovanlux@gmail.com',
   phone: null as string | null,
@@ -13,16 +13,16 @@ export const company = {
   legal: 'MOLDOVAN LUX S.R.L. · CUI 30342978 · J22/1026/21.06.2012',
   siteUrl: 'https://danenachesoft.space',
   foundedNote:
-    'Studio software independent, cu contact direct între client și persoana care coordonează proiectul.',
+    'Sunt Dan Enache, inginer software din Iași. Transform idei și procese complicate în aplicații clare, utile și ușor de folosit.',
 } as const
 
 export const social: { label: string; href: string }[] = []
 
 export const team = [
   {
-    name: 'Enache Dan',
-    role: 'Administrator',
-    bio: 'Administratorul Moldovan Lux și contactul direct pentru evaluarea, organizarea și livrarea proiectelor software.',
+    name: 'Dan Enache',
+    role: 'Inginer software · dezvoltator independent',
+    bio: 'Construiesc aplicații web, produse SaaS și integrări. Sunt contactul tău direct, de la prima idee până la lansare și mentenanță.',
   },
 ] as const
 
@@ -48,9 +48,6 @@ export const legalNav: NavItem[] = [
 export const serverNav: NavItem[] = [
   { label: 'Cont client', to: '/cont' },
 ]
-
-/** Toate rutele valide ale site-ului — folosită și de testul de linkuri moarte. */
-export const allRoutes: NavItem[] = [...nav, ...legalNav, ...serverNav]
 
 export type Service = {
   id: string
@@ -177,10 +174,13 @@ export type Project = {
   result?: string
   kind: 'real' | 'demo'
   href?: string
+  preview?: string
+  summary?: string
+  contribution?: { role: string; responsibilities: string[] }
   stack: string[]
 }
 
-/** Un produs real urmat de studii de capabilitate marcate ca demonstrații. */
+/** Proiecte reale urmate de studii de capabilitate marcate ca demonstrații. */
 export const projects: Project[] = [
   {
     id: 'contabo',
@@ -191,6 +191,8 @@ export const projects: Project[] = [
     glyph: '01',
     kind: 'real',
     href: 'https://contabo.space/',
+    preview: '/projects/contabo.jpg',
+    summary: 'Documente, e-Factura și rapoarte contabile într-o singură platformă online.',
     problem:
       'Documentele, facturarea, registrele și raportarea unei firme ajung ușor în aplicații și pași separați, greu de urmărit fără experiență contabilă.',
     approach:
@@ -200,12 +202,69 @@ export const projects: Project[] = [
     stack: ['SaaS', 'Cloud', 'e-Factura'],
   },
   {
+    id: 'pcpens',
+    tone: 'blue',
+    motif: 'dash',
+    title: 'PCS — Partidul Conservator al Seniorilor',
+    category: 'Site-uri de prezentare',
+    glyph: '02',
+    kind: 'real',
+    href: 'https://pcpens.online/',
+    preview: '/projects/pcpens.jpg',
+    summary: 'Site de prezentare cu program, știri, documente și informații despre organizațiile PCS.',
+    problem:
+      'Prezentarea unei organizații, a documentelor și a informațiilor publice are nevoie de o structură clară, ușor de parcurs.',
+    approach:
+      'Un site cu secțiuni pentru program, știri, documente și organizații teritoriale, alături de acces la contact și aderare.',
+    result:
+      'Site public care reunește prezentarea PCS și informațiile despre activitatea organizației.',
+    stack: ['Prezentare', 'Conținut public', 'Organizații'],
+  },
+  {
+    id: 'poetio',
+    tone: 'sand',
+    motif: 'dash',
+    title: 'Poetio — un spațiu pentru poezie',
+    category: 'Publicații digitale',
+    glyph: '03',
+    kind: 'real',
+    href: 'https://poetio.cloud/',
+    preview: '/projects/poetio.jpg',
+    summary: 'Poeziile lui Dan Enache într-un spațiu de lectură cu pagini dedicate poemelor și comentarii.',
+    problem:
+      'O colecție de poezie are nevoie de un spațiu de lectură aerisit, care pune textul și autorul în prim-plan.',
+    approach:
+      'O publicație digitală cu pagini dedicate poemelor, comentarii, secțiuni pentru video, cărți și autor, plus opțiuni de limbă și temă vizuală.',
+    result:
+      'Colecție publică de poeme semnate de Dan Enache, cu navigare între texte și acces la pagina fiecărui poem.',
+    stack: ['Poezie', 'Design editorial', 'Publicație digitală'],
+  },
+  {
+    id: 'rvr-taxi',
+    tone: 'amber',
+    motif: 'phone',
+    title: 'RVR Taxi — platformă pentru operațiuni taxi',
+    category: 'Aplicații web',
+    glyph: '04',
+    kind: 'real',
+    href: 'https://rvrtaxi.site/',
+    preview: '/projects/rvr-taxi.jpg',
+    summary: 'Platformă pentru operațiuni taxi, cu organizații și conturi de utilizator. Acces după autentificare.',
+    problem:
+      'Accesul la o platformă de operațiuni taxi trebuie organizat în jurul conturilor de utilizator și al organizațiilor.',
+    approach:
+      'O aplicație web cu autentificare prin identificatorul organizației, e-mail și parolă, opțiune de creare a organizației și acces la un cont demonstrativ.',
+    result:
+      'Platformă disponibilă online, cu acces la funcționalități după autentificare.',
+    stack: ['Operațiuni taxi', 'Organizații', 'Autentificare'],
+  },
+  {
     id: 'flux-comenzi',
     tone: 'coral',
     motif: 'dash',
     title: 'Panou de urmărire a comenzilor',
     category: 'Aplicații web',
-    glyph: '02',
+    glyph: '05',
     kind: 'demo',
     problem:
       'Comenzile ajung din trei surse diferite, iar starea reală există doar într-un fișier partajat.',
@@ -219,7 +278,7 @@ export const projects: Project[] = [
     motif: 'flow',
     title: 'Extragere de date din documente',
     category: 'AI aplicat',
-    glyph: '03',
+    glyph: '06',
     kind: 'demo',
     problem:
       'Facturile primite pe e-mail sunt introduse manual în sistemul contabil.',
@@ -233,7 +292,7 @@ export const projects: Project[] = [
     motif: 'flow',
     title: 'Sincronizare de stoc între sisteme',
     category: 'Integrări',
-    glyph: '04',
+    glyph: '07',
     kind: 'demo',
     problem:
       'Stocul din magazinul online rămâne în urma stocului din depozit.',
@@ -247,7 +306,7 @@ export const projects: Project[] = [
     motif: 'dash',
     title: 'Portal pentru clienți',
     category: 'Aplicații web',
-    glyph: '05',
+    glyph: '08',
     kind: 'demo',
     problem:
       'Clienții sună pentru informații care ar putea fi disponibile permanent.',
@@ -261,7 +320,7 @@ export const projects: Project[] = [
     motif: 'dash',
     title: 'Raportare operațională',
     category: 'Integrări',
-    glyph: '06',
+    glyph: '09',
     kind: 'demo',
     problem:
       'Raportul de luni dimineață se face manual, din patru exporturi.',
@@ -275,7 +334,7 @@ export const projects: Project[] = [
     motif: 'phone',
     title: 'Aplicație pentru echipe de teren',
     category: 'Mobil',
-    glyph: '07',
+    glyph: '10',
     kind: 'demo',
     problem:
       'Echipa completează formulare pe hârtie, iar datele ajung în sistem după câteva zile.',
@@ -289,6 +348,14 @@ export const projectCategories = [
   'Toate',
   ...Array.from(new Set(projects.map((p) => p.category))),
 ]
+
+/** Proiectele publicate au pagini proprii; demonstrațiile rămân în portofoliu. */
+export const publishedProjects = projects.filter((project) => project.kind === 'real')
+export const projectRoutes: NavItem[] = publishedProjects.map((project) => ({
+  label: project.title,
+  to: `/proiecte/${project.id}`,
+}))
+export const allRoutes: NavItem[] = [...nav, ...legalNav, ...serverNav, ...projectRoutes]
 
 export type Principle = { title: string; body: string }
 

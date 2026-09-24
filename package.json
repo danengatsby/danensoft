@@ -1,5 +1,5 @@
 {
-  "name": "moldovan-lux-site",
+  "name": "dan-enache-site",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -7,6 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build && node scripts/prerender.mjs",
     "preview": "vite preview",
+    "deploy": "node scripts/release.mjs publish",
+    "rollback": "node scripts/release.mjs rollback",
+    "releases": "node scripts/release.mjs list",
     "lint": "eslint .",
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",
@@ -14,6 +17,7 @@
     "og:render": "node scripts/render-og.mjs",
     "csp:hash": "node scripts/csp-hash.mjs",
     "backup": "node scripts/backup.mjs",
+    "backup:offsite": "node scripts/backup-offsite.mjs",
     "server": "node server/index.mjs",
     "admin:set": "node scripts/set-admin.mjs",
     "mail:test": "node --env-file=/etc/danen/api.env scripts/test-mail.mjs"

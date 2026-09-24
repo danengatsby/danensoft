@@ -13,7 +13,7 @@ server {
     listen 80;
     server_name danenachesoft.space www.danenachesoft.space;
 
-    root /var/www/danen/dist;
+    root /var/www/danen/current;
     index index.html;
     error_page 404 /404.html;
 
@@ -83,6 +83,7 @@ server {
 
     # Fișierele din assets/ au hash în nume, deci pot fi memorate agresiv.
     location /assets/ {
+        alias /var/www/danen/shared-assets/;
         expires 1y;
         add_header Cache-Control "public, immutable";
         access_log off;

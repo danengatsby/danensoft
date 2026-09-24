@@ -1,12 +1,15 @@
+import { useLanguage } from '../hooks/useLanguage'
 import { useEffect, useId, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { company, nav } from '../content/site'
 import ThemeToggle from './ThemeToggle'
+import LanguageSwitch from './LanguageSwitch'
 import { ArrowUpRight } from './Icons'
 
 const [firstWord, ...restWords] = company.name.split(' ')
 
 export default function Header() {
+  const { t } = useLanguage()
   const [open, setOpen] = useState(false)
   const navId = useId()
   const toggleRef = useRef<HTMLButtonElement>(null)
@@ -36,12 +39,12 @@ export default function Header() {
   return (
     <header className="site-header">
       <div className="wrap site-header__inner">
-        <Link to="/" className="brand">
+        <Link to="/" className="brand brand--header" aria-label={t("Dan Enache — Software Developer — Acasă")}>
           <span className="brand__mark" aria-hidden="true">
             {company.initials}
           </span>
           <span>
-            {firstWord} <b>{restWords.join(' ')}</b>
+            {firstWord} <b>{restWords.join(' ')}</b><small>{t("SOFTWARE DEVELOPER")}</small>
           </span>
         </Link>
 
@@ -54,23 +57,36 @@ export default function Header() {
           id={navId}
           className="nav"
           data-open={open}
-          aria-label="Navigație principală"
+          aria-label={t("Navigație principală")}
         >
+          <div className="nav__mobile-head">
+            <span className="eyebrow">{t("Explorați Dan Enache")}</span>
+            <button
+              type="button"
+              className="icon-btn"
+              aria-label={t("Închide navigația")}
+              onClick={() => {
+                setOpen(false)
+                toggleRef.current?.focus()
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                <path d="m6 6 12 12M18 6 6 18" />
+              </svg>
+            </button>
+          </div>
           <ul className="nav__list">
             {nav.map((item) => (
               <li key={item.to}>
-                <NavLink to={item.to} end={item.to === '/'} className="nav__link">
-                  {item.label}
+                <NavLink to={item.to} end={item.to === '/'} className="nav__link" onClick={() => setOpen(false)}>
+                  {t(item.label)}
                 </NavLink>
               </li>
             ))}
           </ul>
           {/* Zonă de cont: servită de serviciul Node, deci navigare completă. */}
-          <a href="/cont" className="nav__link nav__link--account">
-            Cont
-          </a>
-          <Link to="/contact" className="btn btn--dark">
-            Discutăm proiectul <ArrowUpRight />
+          <a href="/cont" className="nav__link nav__link--account">{t("Cont")}</a>
+          <Link to="/contact" className="btn btn--dark">{t("Discutăm proiectul ")}<ArrowUpRight />
           </Link>
         </nav>
 
@@ -78,12 +94,13 @@ export default function Header() {
           <button
             type="button"
             className="nav-backdrop"
-            aria-label="Închide meniul"
+            aria-label={t("Închide meniul")}
             onClick={() => setOpen(false)}
           />
         )}
 
         <div className="site-header__actions">
+          <LanguageSwitch />
           <ThemeToggle />
           <button
             ref={toggleRef}
@@ -91,7 +108,7 @@ export default function Header() {
             className="icon-btn nav-toggle"
             aria-expanded={open}
             aria-controls={navId}
-            aria-label={open ? 'Închide meniul' : 'Deschide meniul'}
+            aria-label={t(open ? 'Închide meniul' : 'Deschide meniul')}
             onClick={() => setOpen((value) => !value)}
           >
             <svg

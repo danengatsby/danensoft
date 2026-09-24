@@ -76,7 +76,7 @@ export default function CodeBackdrop() {
         </span>
         <span>{'  '}app:</span>
         <span>
-          {'    '}image: <i className="code-string">moldovanlux/app:latest</i>
+          {'    '}image: <i className="code-string">danenache/app:latest</i>
         </span>
         <span>
           {'    '}restart: <i className="code-string">unless-stopped</i>

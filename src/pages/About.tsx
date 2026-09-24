@@ -1,203 +1,42 @@
+import { useLanguage } from '../hooks/useLanguage'
 import { Link } from 'react-router-dom'
 import PageIntro from '../components/PageIntro'
 import SectionHead from '../components/SectionHead'
+import ContactCTA from '../components/ContactCTA'
+import ProcessSteps from '../components/ProcessSteps'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { ArrowUpRight, CheckIcon } from '../components/Icons'
-import { audiences, company, principles, process, team } from '../content/site'
+import { audiences, company, projects, services } from '../content/site'
+
+const workingPrinciples = [
+  ['Transparență în planificare', 'Scopul, costurile și etapele sunt scrise în propunere. Modificările sunt discutate înainte de implementare.'],
+  ['Control asupra proiectului', 'Codul sursă, accesele și documentația vă aparțin. Găzduirea se stabilește în funcție de cerințe.'],
+  ['Decizii documentate', 'Arhitectura, integrările și instrucțiunile de operare sunt explicate pentru cei care continuă proiectul.'],
+  ['Continuitate după lansare', 'Mentenanța și intervențiile se pot stabili separat, cu priorități și responsabilități clare.'],
+]
 
 export default function About() {
-  usePageMeta(
-    'Despre',
-    'Moldovan Lux este un studio software din Iași, coordonat de Enache Dan, pentru aplicații cloud și produse SaaS.',
-  )
-
+  const { t } = useLanguage()
+  usePageMeta('Despre', 'Dan Enache, inginer software din Iași. Aplicații cloud, produse SaaS și colaborare directă, de la idee la lansare.')
   return (
     <>
-      <PageIntro
-        eyebrow="Despre"
-        note="Iași · studio software independent"
-        title={
-          <>
-            Răspundere directă, <em>de la idee la producție.</em>
-          </>
-        }
-        description={`${company.foundedNote} Discuțiile despre scop, termene și compromisuri nu trec prin straturi comerciale inutile.`}
-      />
-
-      <section className="section section--tight">
-        <div className="wrap">
-          <ul className="facts">
-            <li>
-              <span className="facts__label">Mod de lucru</span>
-              <span className="facts__value">Iași · remote</span>
-            </li>
-            <li>
-              <span className="facts__label">Clienți</span>
-              <span className="facts__value">{audiences.join(' · ')}</span>
-            </li>
-            <li>
-              <span className="facts__label">Operare cloud</span>
-              <span className="facts__value">Infrastructură proprie</span>
-            </li>
-            <li>
-              <span className="facts__label">Timp de răspuns</span>
-              <span className="facts__value">2 zile lucrătoare</span>
-            </li>
-          </ul>
+      <PageIntro eyebrow={t("Despre")} note={t("Iași, România · colaborare remote")} title={t("Un partener tehnic implicat în fiecare etapă.")} description={t("Dan Enache este un studio independent de dezvoltare software. Colaborarea pornește de la nevoile afacerii și continuă cu implementare, livrare și suport tehnic.")} />
+      <section className="section"><div className="wrap">
+        <div className="company-profile">
+          <article className="company-profile__person"><span className="profile-monogram" aria-hidden="true">{t("DE")}</span><p className="eyebrow">{t("Coordonare și dezvoltare")}</p><h2>{t("Dan Enache")}</h2><p className="profile-role">{t("Inginer software · dezvoltator independent")}</p><p>{t("Contactul direct pentru evaluarea, organizarea și livrarea proiectului dumneavoastră.")}</p><Link to="/contact" className="text-link">{t("Să discutăm ")}<ArrowUpRight /></Link></article>
+          <div className="company-profile__overview"><p className="eyebrow">{t("Despre activitate")}</p><h2>{t("Dezvoltare software conectată la realitatea afacerii.")}</h2><p>{t("Construim aplicații cloud, produse SaaS și integrări pentru companii care vor să își organizeze mai bine operațiunile. Pornim de la fluxurile de lucru și definim împreună rezultatul așteptat.")}</p><p>{t("Dan Enache rămâne implicat de la prima discuție până la lansare. Dacă proiectul necesită un specialist extern, rolul și contribuția lui sunt discutate înainte.")}</p><ul className="company-profile__checks">{['Analiză și propunere de implementare', 'Dezvoltare, testare și livrare în etape', 'Operare cloud, documentație și mentenanță'].map((item) => <li key={item}><CheckIcon />{t(item)}</li>)}</ul><div className="profile-audiences"><span>{t("Colaborăm cu")}</span>{audiences.map((item) => <span className="tag" key={item}>{t(item)}</span>)}</div></div>
         </div>
-      </section>
-
-      <section className="section" style={{ paddingTop: 0 }}>
-        <div className="wrap">
-          <SectionHead
-            eyebrow="Echipă"
-            title={
-              <>
-                Știți cu cine <em>discutați.</em>
-              </>
-            }
-          >
-            <p>
-              Același contact rămâne implicat de la evaluarea inițială până la
-              lansare și operare.
-            </p>
-          </SectionHead>
-          <div className="team-grid">
-            {team.map((member) => (
-              <article className="team-card" key={member.name}>
-                <span className="team-card__mark" aria-hidden="true">
-                  {member.name
-                    .split(' ')
-                    .map((part) => part[0])
-                    .join('')}
-                </span>
-                <div>
-                  <p className="mono-sm">{member.role}</p>
-                  <h2>ing.soft {member.name}</h2>
-                  <p>{member.bio}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section band">
-        <div className="wrap split">
-          <div>
-            <p className="eyebrow">Poziționare</p>
-            <h2 className="h-section" style={{ marginBlock: 'var(--s-4) var(--s-5)' }}>
-              Ce <em>nu</em> veți găsi aici
-            </h2>
-            <p style={{ maxWidth: '34ch', lineHeight: 1.75 }}>
-              Preferăm o pagină mai puțin impresionantă decât una care promite ce nu
-              putem susține.
-            </p>
-          </div>
-          <ul className="checklist">
-            <li>
-              <CheckIcon />
-              <span>
-                Fără logo-uri de clienți și fără testimoniale pe care nu le putem
-                proba public.
-              </span>
-            </li>
-            <li>
-              <CheckIcon />
-              <span>
-                Fără cifre de tipul „creștere de X%” rupte de contextul în care au
-                apărut.
-              </span>
-            </li>
-            <li>
-              <CheckIcon />
-              <span>
-                Fără echipe fictive: dacă avem nevoie de un specialist din exterior,
-                vă spunem înainte.
-              </span>
-            </li>
-            <li>
-              <CheckIcon />
-              <span>
-                Fără livrare „la cheie” fără documentație. Predarea include tot ce e
-                necesar ca altcineva să continue.
-              </span>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="wrap">
-          <SectionHead
-            eyebrow="Proces"
-            title={
-              <>
-                Cum decurge <em>o colaborare.</em>
-              </>
-            }
-          >
-            <p>
-              Etapele sunt aceleași indiferent de mărimea proiectului. Ce variază este
-              durata fiecărui ciclu de livrare.
-            </p>
-          </SectionHead>
-
-          <ol className="process">
-            {process.map((step, index) => (
-              <li key={step.title}>
-                <span className="process__num" aria-hidden="true">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <div className="process__body">
-                  <h3>{step.title}</h3>
-                  <p>{step.body}</p>
-                </div>
-                <b className="process__tag">{step.duration}</b>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <section className="section" style={{ paddingTop: 0 }}>
-        <div className="wrap">
-          <SectionHead
-            eyebrow="Angajamente"
-            title={
-              <>
-                Principiile după care <em>lucrăm.</em>
-              </>
-            }
-          />
-          <div className="columns">
-            {principles.map((principle, index) => (
-              <article key={principle.title}>
-                <span className="columns__num">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <h3>{principle.title}</h3>
-                <p>{principle.body}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="wrap">
-        <div className="cta-band">
-          <div>
-            <p className="eyebrow">Următorul pas</p>
-            <h2 style={{ marginTop: 'var(--s-4)' }}>
-              Hai să facem problema <em>clară împreună.</em>
-            </h2>
-          </div>
-          <Link to="/contact" className="round-cta">
-            <span>Discutăm proiectul</span>
-            <ArrowUpRight />
-          </Link>
-        </div>
-      </section>
+        <dl className="company-facts"><div><dt>{t("Proiecte publicate în portofoliu")}</dt><dd>{projects.filter((p) => p.kind === 'real').length}</dd></div><div><dt>{t("Servicii de dezvoltare și operare")}</dt><dd>{services.length}</dd></div><div><dt>{t("Colaborare")}</dt><dd>{t("Iași · remote")}</dd></div><div><dt>{t("Răspuns la solicitări")}</dt><dd>{t("2 zile lucrătoare")}</dd></div></dl>
+      </div></section>
+      <section className="section section--surface"><div className="wrap">
+        <SectionHead eyebrow={t("Principii de colaborare")} title={t("Responsabilități clare, de la început.")}><p>{t("O bază comună pentru deciziile tehnice și comerciale.")}</p></SectionHead>
+        <div className="principle-grid">{workingPrinciples.map(([title, body], index) => <article key={title}><span className="principle-index">0{index + 1}</span><div><h3>{t(title)}</h3><p>{t(body)}</p></div></article>)}</div>
+      </div></section>
+      <section className="section"><div className="wrap">
+        <SectionHead eyebrow={t("Proces")} title={t("Cum decurge un proiect.")}><p>{t("Etape vizibile și un punct de contact pe tot parcursul colaborării.")}</p></SectionHead><ProcessSteps detailed />
+        <div className="company-legal"><span>{t("Datele operatorului")}</span><p>{company.legal}</p><Link to="/confidentialitate">{t("Confidențialitate ")}<ArrowUpRight /></Link></div>
+      </div></section>
+      <ContactCTA />
     </>
   )
 }

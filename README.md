@@ -1,4 +1,4 @@
-# Moldovan Lux — site de prezentare
+# Dan Enache — site de prezentare
 
 Site de prezentare pentru aplicații cloud și produse SaaS: React + Vite +
 TypeScript, pagini prerandate, navigație accesibilă și formular de contact validat.
@@ -23,19 +23,27 @@ npm run dev        # server de dezvoltare
 | `npm run csp:hash`  | Recalculează hash-ul CSP după modificarea scriptului din `index.html` |
 | `npm run backup`    | Copie de siguranță imediată a bazei de mesaje |
 
-Proiectul este sub git din 15 august 2026. Depozitul este local, fără copie la
-distanță: `git remote add origin …` când există unde.
+Remote-ul `origin` este `https://github.com/danengatsby/danensoft.git`.
+Prima sincronizare folosește conectorul GitHub: cele patru revizii istorice și
+starea curentă sunt importate cu arbori de fișiere identici. Hash-urile commiturilor
+importate diferă; mesajele includ hash-ul original. Istoricul local original
+rămâne în ramura `archive/local-history-20260924`; `main` urmărește `origin/main`.
+Pentru `git push` direct din shell este necesară autentificarea acestui server
+la noul depozit; conectorul GitHub poate sincroniza modificările independent.
+Depozitul conține sursele; baza SQLite și secretele din `/etc/danen/` rămân
+în afara Git. O modificare locală devine copie externă numai după sincronizare.
 
 ## Pagini
 
 | Rută         | Conținut                                                            |
 | ------------ | ------------------------------------------------------------------- |
-| `/`          | Poziționare cloud/SaaS, servicii, proiect real și contact             |
-| `/servicii`  | Cele cinci servicii, cu livrabile și tehnologii, plus întrebări      |
-| `/proiecte`  | Produsul Contabo și demonstrații filtrabile după categorie           |
-| `/despre`    | Echipa, mod de lucru, proces și principii                            |
-| `/contact`   | Date de contact și formular validat                                  |
-| `/confidentialitate` | Notă de confidențialitate, link doar în subsol               |
+| `/`          | Oferta pe scurt, trei arii de servicii, patru proiecte și procesul colaborării |
+| `/servicii`  | Cinci servicii în trei arii, navigare laterală, livrabile și detalii extensibile |
+| `/proiecte`  | Contabo, PCS, Poetio, RVR Taxi și demonstrații filtrabile după categorie           |
+| `/proiecte/:id` | Studii de caz pentru cele patru proiecte publicate, cu context, soluție, rezultat și acces separat la site |
+| `/despre`    | Dan Enache, activitate, principii, proces și datele operatorului     |
+| `/contact`   | Formular validat, date de contact și pașii de după trimitere         |
+| `/confidentialitate` | Șapte secțiuni tematice cu un cuprins navigabil              |
 | orice altceva| Pagină 404 cu rutele principale                                      |
 
 Verificările rulate și limitele lor sunt în [QUALITY-REPORT.md](QUALITY-REPORT.md).
@@ -43,8 +51,8 @@ Verificările rulate și limitele lor sunt în [QUALITY-REPORT.md](QUALITY-REPOR
 ## Identitate și indexare
 
 Identitatea și conținutul comercial se editează din
-[`src/content/site.ts`](src/content/site.ts). Sunt configurate denumirea Moldovan
-Lux, datele juridice, adresa de contact, administratorul și proiectul Contabo.
+[`src/content/site.ts`](src/content/site.ts). Identitatea publică este Dan Enache. Operatorul juridic și adresa de contact
+existente sunt păstrate în nota de confidențialitate și în datele structurate.
 
 - Telefonul și profilurile sociale nu sunt afișate, fiindcă nu au fost furnizate.
 - Nota de confidențialitate descrie comportamentul tehnic și identifică operatorul,
@@ -52,9 +60,28 @@ Lux, datele juridice, adresa de contact, administratorul și proiectul Contabo.
 - `robots.txt`, sitemap-ul, canonical, Open Graph, Twitter Card și JSON-LD sunt
   configurate pentru domeniul `danenachesoft.space`.
 
-Site-ul nu inventează testimoniale, certificări sau cifre de rezultat. Contabo
-este marcat drept produs real și trimite la aplicația publică; restul cardurilor
-sunt marcate explicit drept demonstrații interne.
+Site-ul nu inventează testimoniale, certificări sau cifre de rezultat. Contabo, PCS, Poetio și RVR Taxi
+sunt afișate primele, cu capturi locale din `public/projects/`, descrieri scurte
+și link pe întregul card către studiul de caz intern. Fiecare studiu are un buton separat către site-ul proiectului. Demonstrațiile interne sunt într-o secțiune pliabilă
+separată; alegerea unei categorii o deschide automat.
+
+## Studii de caz
+
+Contabo, PCS, Poetio și RVR Taxi au pagini la `/proiecte/contabo/`,
+`/proiecte/pcpens/`, `/proiecte/poetio/` și `/proiecte/rvr-taxi/`.
+Cardurile de pe Acasă și Proiecte duc la aceste pagini, în aceeași filă.
+Butonul „Deschide site-ul” din studiu deschide site-ul extern într-o filă nouă.
+
+Conținutul este preluat din `src/content/site.ts`: `problem`, `approach`,
+`result`, `preview` și `summary`. Câmpul opțional `contribution` conține `role`
+și `responsibilities`; se completează numai cu informații confirmate de autor.
+În lipsa lui, secțiunile „Rolul meu” și „Contribuția mea” nu sunt afișate.
+Textele au traduceri în `src/content/english.ts`. Nu sunt adăugate cifre de
+performanță sau responsabilități personale deduse din capturile proiectelor.
+
+Prerandarea folosește aceeași listă de proiecte ca aplicația. Doar proiectele
+publicate au pagini proprii; identificatorii necunoscuți și demonstrațiile
+interne afișează pagina 404. Cele patru adrese sunt incluse în sitemap.
 
 ## Formularul de contact
 
@@ -80,34 +107,98 @@ Site-ul rulează la **https://danenachesoft.space** (HTTP redirectează automat)
 | Element | Valoare |
 | --- | --- |
 | Configurație nginx | `/etc/nginx/sites-available/danenachesoft` |
-| Rădăcină servită | `/var/www/danen/dist` |
+| Rădăcină servită | `/var/www/danen/current` |
 | Certificat | Let's Encrypt, reînnoit automat de `certbot.timer` |
 | Adresă internă de rezervă | `http://159.69.200.202:8090` |
 
-Build-ul produce în `dist/` șase pagini publice prerandate și `404.html`.
+Build-ul produce în `.build/dist/` zece pagini publice prerandate și `404.html`.
 nginx servește paginile valide inclusiv la acces direct, iar pentru adresele
 inexistente afișează pagina de eroare cu status HTTP 404. Un exemplu comentat de configurație este în
 [`deploy/nginx.conf.example`](deploy/nginx.conf.example).
 
-După orice modificare de conținut: `npm run build`. nginx servește direct din
-`dist/`, deci schimbarea apare imediat, fără reload.
+Compilarea și publicarea sunt separate:
+
+```bash
+npm run lint && npm run typecheck && npm test
+npm run build       # candidat în .build/dist; site-ul activ nu este modificat
+npm run preview     # verificarea candidatului
+npm run deploy      # release nou, comutare atomică și verificări HTTP
+npm run releases    # versiunea curentă, precedentă și lista copiilor
+npm run rollback    # revine la versiunea precedentă
+```
+
+nginx servește `current`, un link către `releases/<id>/site`. `npm run deploy`
+verifică HTML-ul prerandat, rutele din sitemap, resursele și hash-urile CSP,
+apoi comută atomic linkul. Verificarea publică urmărește identificatorul
+release-ului, toate rutele și un răspuns 404. Dacă eșuează, linkul anterior
+este restaurat. `previous` păstrează ținta de rollback. Se poate alege explicit
+un release cu `npm run rollback -- <id>`.
+
+Fișierele JS/CSS cu hash sunt păstrate în `shared-assets/`, servit separat de
+nginx: rămân accesibile pentru file vechi și după rollback. Publicările
+concurente sunt blocate prin `.deploy-lock/`. Dacă procesul este omorât,
+verificați PID-ul din `.deploy-lock/owner.json` înainte de îndepărtarea manuală
+a blocării. Release-urile și resursele partajate nu sunt șterse automat.
+
+Configurația CSP activă este verificată înainte de publicare; dacă se schimbă
+scripturile inline, rulați `npm run csp:hash` și actualizați configurația nginx
+înainte de deploy. `DANEN_DEPLOY_URL` permite verificarea unei instanțe de test.
+Acest mecanism versionază site-ul static. Serviciul Node și migrările bazei
+nu sunt anulate prin `npm run rollback`.
+
+Migrarea din 24 septembrie păstrează versiunea publică existentă drept
+`baseline-20260924`. Vechiul `dist/` este păstrat pentru recuperare, dar nu mai
+este destinație de build sau rădăcină nginx. Studiile de caz rămân în candidatul
+de build până la publicarea lor explicită.
 
 ## Design
 
 Tokenurile de culoare, tipografie și spațiere sunt în
-[`src/styles/tokens.css`](src/styles/tokens.css); schimbarea paletei sau a scării
-tipografice se face doar de acolo. Nu se încarcă fonturi externe — site-ul nu
-face nicio cerere către terți.
+[`src/styles/tokens.css`](src/styles/tokens.css). Nu se încarcă fonturi externe
+sau alte resurse de la terți.
 
-Tema implicită este cea deschisă (hârtie caldă). Comutatorul din antet schimbă
-în tema întunecată (albastru închis) și salvează alegerea în `localStorage`, sub
-cheia `moldovan-lux-theme`. Un script scurt din `index.html` aplică tema înainte de prima
+Prezentarea companiei este definită în [`src/styles/business.css`](src/styles/business.css),
+încărcat după stilurile de bază. Paginile folosesc titluri compacte, panouri
+consecvente, navigare între secțiuni și grile adaptate ecranului. Serviciile sunt
+grupate în dezvoltare, integrări și operare; detaliile tehnice sunt extensibile.
+Pagina principală include o schemă HTML/CSS a soluției și toate cele patru proiecte.
+
+Grupurile de servicii, rezumatele procesului și angajamentele se editează în
+[`src/content/presentation.ts`](src/content/presentation.ts). `PageIntro`,
+`ProcessSteps`, `PublishedProjectCard` și `ContactCTA` păstrează aceeași structură
+între pagini; subsolul grupează navigarea, serviciile și contactul.
+Interfața respectă preferința de mișcare redusă, iar linkurile către servicii
+poziționează secțiunea sub antetul fix.
+
+Tema implicită este verde-albastru închis, cu text deschis și accente mentă.
+Comutatorul din antet oferă și o temă deschisă și salvează alegerea în `localStorage`,
+sub cheia `dan-enache-theme`. Vechea cheie nu este preluată: vizitatorii existenți
+văd noua identitate la prima vizită după schimbare.
+Un script scurt din `index.html` aplică tema înainte de prima
 randare, ca să nu apară o sclipire de temă greșită la încărcare.
+
+## Română și engleză
+
+Comutatorul RO / EN din antet traduce toate paginile publice, navigarea,
+metadatele, textele accesibile și mesajele formularului. Alegerea este salvată
+în `localStorage` sub cheia `dan-enache-language` și sincronizată între file.
+Româna este limba implicită. Comutarea funcționează și când stocarea este blocată,
+dar preferința nu poate fi păstrată după reîncărcare în acel caz.
+
+Traducerile se întrețin în [`src/content/english.ts`](src/content/english.ts),
+prin `useLanguage().t()`. URL-urile, identificatorii, filtrele și valorile
+introduse în formular rămân stabile la schimbarea limbii. HTML-ul prerandat
+rămâne în română, iar preferința salvată se aplică la pornirea aplicației.
+Conturile și administrarea servite de Node, precum și mesajele automate prin
+e-mail, păstrează limba română.
+
+`npm run qa` verifică ambele limbi și teme: 176 combinații de pagină și ecran.
 
 ## Mesajele din formular
 
 Formularul trimite către `/api/contact`, un serviciu Node care rulează pe același
-server și salvează mesajele într-o bază SQLite. Nu există furnizor extern.
+server și salvează mesajele într-o bază SQLite. Notificările sunt expediate
+prin Gmail către `moldovanlux@gmail.com`.
 
 | Componentă | Unde |
 | --- | --- |
@@ -145,18 +236,94 @@ sudo -u danen rm -f /var/lib/danen/messages.db-wal /var/lib/danen/messages.db-sh
 systemctl start danen-api
 ```
 
-Copiile stau pe **același disc** ca baza: apără de ștergere accidentală și de
-stricarea fișierului, nu de pierderea serverului. Pentru asta ar trebui duse în
-altă parte.
+Copiile locale rămân pe același server. Este pregătit și un mecanism extern
+prin SSH/rsync, care necesită destinația furnizată de proprietar:
+
+1. Configurați `/etc/danen/backup.env` și `/etc/danen/backup-ssh.conf` folosind
+   exemplele din `deploy/`. Cheia SSH și fișierul cu gazdele cunoscute se păstrează
+   în `/etc/danen/`, accesibile numai utilizatorului `danen`; verificați separat
+   amprenta gazdei. Destinația trebuie să aibă `rsync` instalat.
+2. Rulați serviciul `danen-backup-offsite` pentru o probă. Fiecare execuție creează
+   o copie SQLite coerentă, o transferă într-un director privat nou, o descarcă
+   din nou, compară SHA-256 și verifică integritatea, relațiile și tabelele.
+3. După prima probă reușită, activați `danen-backup-offsite.timer` (zilnic,
+   03:45 UTC, cu întârziere aleatoare de până la 15 minute).
+
+Numai directoarele externe cu `verified.json` sunt copii confirmate.
+`/var/backups/danen/offsite-status.json` arată ultima reușită; o eroare ulterioară
+este raportată de systemd, fără să șteargă reușita anterioară. Copiile de pe
+serverul extern nu se șterg automat: retenția trebuie stabilită pe destinație.
+Scriptul nu transferă secretele SMTP și nu înlocuiește backupul surselor Git.
+Transportul este criptat prin SSH; criptarea stocării externe depinde de destinație.
+Până la configurare și prima probă reușită, **backupul extern nu este activ**.
 
 Serviciul folosește module Node (`node:sqlite`, `node:crypto`, `node:http`) și, doar
 pentru notificările prin e-mail, `nodemailer`.
 
-> **Notificările prin e-mail sunt inactive.** `/etc/danen/api.env` conține doar
-> `DANEN_HTTPS=1`, fără variabilele `SMTP_*`, așa că mesajele se salvează în baza
-> de date fără să anunțe pe nimeni. Variabilele necesare sunt listate în
-> [`server/mail.mjs`](server/mail.mjs); după completare, verificați cu
-> `npm run mail:test`.
+Gmail este activ pe `smtp.gmail.com:587`, cu STARTTLS, expeditorul
+`Dan Enache <moldovanlux@gmail.com>` și destinatarul `moldovanlux@gmail.com`.
+Odată cu salvarea cererii, se programează independent notificarea către administrator
+și o confirmare automată către adresa din formular, într-o coadă persistentă. Confirmarea include termenul
+de răspuns de două zile lucrătoare și permite răspuns direct către Dan Enache;
+nu include conținutul introdus în formular. Un eșec SMTP nu anulează salvarea cererii.
+`Reply-To` folosește adresa vizitatorului în notificare și adresa de contact în
+confirmare. Parola este păstrată numai pe server,
+în `/etc/danen/api.env` (acces root, permisiuni 600), niciodată în depozit.
+
+**Activat la 24 septembrie 2026.** Autentificarea a reușit, iar Gmail a acceptat
+mesajul de test. Mesajele se păstrează și în baza de date. Pentru schimbarea
+parolei de aplicație, creați una pentru contul `moldovanlux@gmail.com`, apoi rulați
+într-un terminal al serverului:
+
+```bash
+sudo node /var/www/danen/scripts/setup-gmail.mjs
+```
+
+Comanda solicită parola fără afișare, verifică autentificarea înainte de salvare,
+păstrează celelalte setări din fișier, repornește `danen-api` și trimite un test.
+Dacă repornirea eșuează, restaurează configurația anterioară. Un răspuns de acceptare
+SMTP confirmă predarea către Gmail; verificați și Inbox/Spam pentru primire.
+Verificarea ulterioară fără expediere: `npm run mail:test`.
+
+### Coada persistentă de notificări
+
+La primirea formularului, mesajul și două notificări (`admin` și `confirmation`)
+sunt salvate atomic în SQLite, în tabelele `messages` și `mail_jobs`. Răspunsul
+HTTP 201 nu așteaptă conexiunea SMTP. E-mailurile sunt procesate în fundal, la
+primirea cererii, la pornirea serviciului și apoi la fiecare 10 secunde.
+
+Fiecare notificare are cel mult 6 încercări: prima imediat, apoi la 1 minut,
+5 minute, 15 minute, 1 oră și 6 ore după eșecul precedent. Notificarea acceptată
+nu este retrimisă când cealaltă eșuează. Fără SMTP configurat, notificările
+rămân în așteptare fără a consuma încercări.
+
+În `/admin` apar separat stările fiecărei notificări: în așteptare, în curs,
+reîncercare programată, acceptat de SMTP sau necesită intervenție. După epuizarea
+încercărilor, administratorul poate relua doar notificările eșuate. Butonul
+folosește verificările existente de rol și origine. Mesajele mai vechi nu
+sunt trimise retroactiv; pentru ele apare lipsa istoricului de livrare.
+
+Coada fixează destinatarul, conținutul și un `Message-ID` la primirea mesajului.
+Rezervările expiră după 2 minute și sunt reînnoite la fiecare 40 de secunde cât
+timp expedierea continuă. Astfel, o notificare întreruptă poate fi recuperată
+la repornire, iar două procesoare nu preiau simultan aceeași rezervare validă.
+La oprire, serviciul așteaptă până la 45 de secunde operațiunea în curs.
+
+SMTP nu permite garantarea unei singure livrări: dacă acceptă mesajul, dar
+procesul se oprește înainte să salveze rezultatul, reîncercarea poate produce
+un duplicat. `Message-ID` rămâne stabil, însă deduplicarea la destinatar nu
+este garantată. „Acceptat de SMTP” nu dovedește sosirea în Inbox.
+
+Ștergerea cererii elimină în cascadă notificările din coadă; o expediere deja
+în curs nu poate fi retrasă. Conținutul duplicat al e-mailului este eliminat
+din coadă după acceptarea SMTP. Pentru erori se păstrează o explicație generică,
+numărul de încercări și următorul termen, fără răspunsul SMTP brut.
+Copiile SQLite existente includ automat și coada; restaurarea unei copii vechi
+poate relua notificări a căror acceptare a avut loc după realizarea acelei copii.
+
+Implementare: `server/mail-queue.mjs` (persistență), `server/mail-worker.mjs`
+(procesare), `server/mail.mjs` (conținut și transport). Migrarea este aditivă și
+rulează la pornirea serviciului, fără schimbarea conturilor sau mesajelor.
 
 ### Conturi de client
 
@@ -170,8 +337,8 @@ potrivirea după adresă ar permite cuiva să citească cererile altcuiva
 înregistrându-se cu adresa lui. Cererile trimise fără autentificare rămân
 nelegate de vreun cont.
 
-Când se adaugă un serviciu de e-mail, pasul următor firesc este confirmarea
-adresei și resetarea parolei — ambele lipsesc acum.
+Confirmarea adresei și resetarea parolei conturilor nu sunt implementate.
+Expedierea prin Gmail este folosită deocamdată pentru notificările formularului.
 
 ### Administrare
 

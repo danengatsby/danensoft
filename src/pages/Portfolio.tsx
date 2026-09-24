@@ -1,15 +1,18 @@
+import { useLanguage } from '../hooks/useLanguage'
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import PageIntro from '../components/PageIntro'
+import ContactCTA from '../components/ContactCTA'
 import ProjectVisual from '../components/ProjectVisual'
+import PublishedProjectCard from '../components/PublishedProjectCard'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { ArrowUpRight } from '../components/Icons'
 import { projectCategories, projects } from '../content/site'
 
 export default function Portfolio() {
+  const { t } = useLanguage()
   usePageMeta(
     'Proiecte',
-    'Un produs SaaS real și demonstrații de capabilitate pentru aplicații cloud, integrări, AI și mobil.',
+    'Contabo, PCS, Poetio și RVR Taxi: proiecte reale de aplicații web, site-uri de prezentare și publicații digitale, alături de demonstrații interne.',
   )
 
   const [filter, setFilter] = useState('Toate')
@@ -22,28 +25,25 @@ export default function Portfolio() {
     [filter],
   )
 
+  const published = visible.filter((project) => project.kind === 'real')
+  const demos = visible.filter((project) => project.kind === 'demo')
+
   return (
     <>
       <PageIntro
-        eyebrow="Proiecte"
-        note="Produs real · demonstrații marcate distinct"
+        eyebrow={t("Proiecte")}
+        note={t("Proiecte reale · demonstrații marcate distinct")}
         title={
-          <>
-            Capabilitatea se vede <em>mai bine în context.</em>
-          </>
+          <>{t("Proiecte software și prezențe digitale.")}</>
         }
-        description="Începem cu un produs SaaS funcțional, urmat de demonstrații interne care arată tipurile de probleme pe care le putem aborda."
+        description={t("Contabo, PCS, Poetio și RVR Taxi: de la contabilitate și operațiuni taxi la comunicare publică și poezie. Soluții construite pentru nevoi și utilizatori diferiți.")}
       />
 
-      <section className="section">
+      <section className="section portfolio-section">
         <div className="wrap">
-          <p className="notice" style={{ maxWidth: '60ch', marginBottom: 'var(--s-6)' }}>
-            <strong>Cum citim portofoliul.</strong> Contabo este un produs real,
-            disponibil public. Cardurile marcate „Demonstrație” sunt studii interne,
-            nu lucrări de client, și nu conțin date reale sau rezultate inventate.
-          </p>
-
-          <ul className="filter-bar" aria-label="Filtrare după categorie">
+          <div className="portfolio-toolbar">
+          <p className="sidebar-label">{t("Filtrați proiectele")}</p>
+          <ul className="filter-bar" aria-label={t("Filtrare după categorie")}>
             {projectCategories.map((category) => (
               <li key={category}>
                 <button
@@ -52,7 +52,7 @@ export default function Portfolio() {
                   aria-pressed={filter === category}
                   onClick={() => setFilter(category)}
                 >
-                  {category}
+                  {t(category)}
                 </button>
               </li>
             ))}
@@ -62,43 +62,63 @@ export default function Portfolio() {
             className="mono-sm"
             role="status"
             aria-live="polite"
-            style={{ marginBottom: 'var(--s-5)' }}
           >
-            {visible.length} {visible.length === 1 ? 'exemplu' : 'exemple'} afișate
+            {published.length} {t(published.length === 1 ? 'proiect publicat' : 'proiecte publicate')}
+            {demos.length > 0 && ` · ${demos.length} ${t(demos.length === 1 ? 'demonstrație' : 'demonstrații')}`}
           </p>
 
-          <ul className="work-grid">
-            {visible.map((project) => (
-              <li key={project.id}>
-                <article className={`work-card tone-${project.tone}`}>
-                  <div className="work-card__meta">
-                    <span>
-                      {project.kind === 'real' ? 'Proiect real' : 'Demonstrație'} ·{' '}
-                      {project.category}
-                    </span>
-                    <span>{project.glyph}</span>
-                  </div>
-                  <div className="work-card__visual">
-                    <ProjectVisual motif={project.motif} />
-                  </div>
-                  <h2 className="work-card__title">{project.title}</h2>
-                  <p>
-                    <strong>Problema.</strong> {project.problem}
-                  </p>
-                  <p>
-                    <strong>Abordarea.</strong> {project.approach}
-                  </p>
-                  {project.result && (
-                    <p>
-                      <strong>Rezultatul.</strong> {project.result}
-                    </p>
-                  )}
-                  <ul className="tag-row">
-                    {project.stack.map((item) => (
-                      <li key={item} className="tag">
-                        {item}
-                      </li>
-                    ))}
+          </div>
+
+          {published.length > 0 && (
+            <section className="published-section" aria-labelledby="published-title">
+              <div className="portfolio-section-head">
+                <h2 id="published-title">{t("Proiecte publicate")}</h2>
+                <p>{t("Fiecare proiect are un studiu de caz și un link separat către site.")}</p>
+              </div>
+              <ul className="published-grid">
+                {published.map((project) => (
+                  <li key={project.id}><PublishedProjectCard project={project} /></li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {demos.length > 0 && (
+            <details className="portfolio-demos" key={filter} open={filter !== 'Toate'}>
+              <summary>{t("Demonstrații de capabilitate ")}<span>{demos.length}</span></summary>
+              <p>{t("Studii interne care ilustrează tipuri de aplicații și integrări. Acestea nu sunt proiecte publicate și nu au un site de vizitat.")}</p>
+              <ul className="work-grid">
+                {demos.map((project) => (
+                  <li key={project.id}>
+                    <article className={`work-card tone-${project.tone}`}>
+                      <div className="work-card__meta">
+                        <span>
+                          {t(project.kind === 'real' ? 'Proiect real' : 'Demonstrație')} ·{' '}
+                          {t(project.category)}
+                        </span>
+                        <span>{project.glyph}</span>
+                      </div>
+                      <div className="work-card__visual">
+                        <ProjectVisual motif={project.motif} />
+                      </div>
+                      <h3 className="work-card__title">{t(project.title)}</h3>
+                      <p>
+                        <strong>{t("Problema.")}</strong> {t(project.problem)}
+                      </p>
+                      <p>
+                        <strong>{t("Abordarea.")}</strong> {t(project.approach)}
+                      </p>
+                      {project.result && (
+                        <p>
+                          <strong>{t("Rezultatul.")}</strong> {t(project.result)}
+                        </p>
+                      )}
+                      <ul className="tag-row">
+                        {project.stack.map((item) => (
+                          <li key={item} className="tag">
+                            {t(item)}
+                          </li>
+                        ))}
                   </ul>
                   {project.href && (
                     <a
@@ -106,35 +126,19 @@ export default function Portfolio() {
                       href={project.href}
                       target="_blank"
                       rel="noreferrer noopener"
-                    >
-                      Explorează produsul <ArrowUpRight />
+                    >{t("Vezi proiectul ")}<ArrowUpRight />
                     </a>
                   )}
                 </article>
               </li>
             ))}
-          </ul>
+              </ul>
+            </details>
+          )}
         </div>
       </section>
 
-      <section className="wrap">
-        <div className="cta-band">
-          <div>
-            <p className="eyebrow">Proiectul dumneavoastră</p>
-            <h2 style={{ marginTop: 'var(--s-4)' }}>
-              Recunoașteți una dintre <em>situațiile de mai sus?</em>
-            </h2>
-            <p className="prose">
-              Scrieți-ne despre a dumneavoastră. Vă spunem ce am face diferit față de
-              exemplul general și de ce.
-            </p>
-          </div>
-          <Link to="/contact" className="round-cta">
-            <span>Discutăm proiectul</span>
-            <ArrowUpRight />
-          </Link>
-        </div>
-      </section>
+      <ContactCTA />
     </>
   )
 }

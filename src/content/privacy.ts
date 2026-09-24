@@ -8,7 +8,7 @@
 
 export type PrivacySection = { title: string; body: string[] }
 
-export const privacyUpdated = '15 august 2026'
+export const privacyUpdated = '24 septembrie 2026'
 
 export const privacySections: PrivacySection[] = [
   {
@@ -28,7 +28,8 @@ export const privacySections: PrivacySection[] = [
   {
     title: 'Ce se întâmplă cu mesajul trimis',
     body: [
-      'Mesajul este transmis către serverul nostru și salvat într-o bază de date găzduită tot pe acel server. Nu folosim un serviciu extern de formulare, deci datele nu ajung la un furnizor terț.',
+      'Mesajul este transmis către serverul nostru și salvat într-o bază de date găzduită pe acel server. O notificare care include numele, adresa de e-mail, organizația și subiectul completate, precum și textul mesajului, este expediată prin serviciul Gmail al Google către moldovanlux@gmail.com, pentru a putea răspunde solicitării.',
+      'La adresa de e-mail completată în formular trimitem, tot prin Gmail, o confirmare automată de primire. Confirmarea nu include textul mesajului sau detaliile organizației.',
       'Accesul la mesajele salvate este restricționat: doar contul cu rol de administrator le poate vedea. Nu sunt publice și nu apar nicăieri pe site.',
       'Nu reținem adresa dumneavoastră IP împreună cu mesajul. Adresele IP sunt folosite temporar, doar în memoria serverului, pentru a limita trimiterile repetate și a bloca roboții.',
     ],
@@ -37,7 +38,7 @@ export const privacySections: PrivacySection[] = [
     title: 'Contul de client',
     body: [
       'Crearea unui cont este opțională. Dacă vă faceți cont, stocăm numele, adresa de e-mail și parola în formă criptată ireversibil (scrypt). Nu putem citi parola și nu o putem recupera.',
-      'Adresa de e-mail nu este verificată printr-un mesaj de confirmare, pentru că nu avem încă un serviciu de e-mail configurat. Din acest motiv, un cont nou nu vede cererile trimise anterior de la aceeași adresă: în cont apar doar cererile trimise cât timp sunteți autentificat. Este o măsură deliberată, ca nimeni să nu poată citi cererile altcuiva înregistrându-se cu adresa lui.',
+      'Adresa de e-mail a contului nu este verificată printr-un mesaj de confirmare; trimiterea prin Gmail este folosită pentru notificările formularului de contact. Din acest motiv, un cont nou nu vede cererile trimise anterior de la aceeași adresă: în cont apar doar cererile trimise cât timp sunteți autentificat. Este o măsură deliberată, ca nimeni să nu poată citi cererile altcuiva înregistrându-se cu adresa lui.',
       'Autentificarea folosește un cookie de sesiune strict necesar, valabil 30 de zile, pe care îl ștergeți ieșind din cont.',
     ],
   },
@@ -52,7 +53,7 @@ export const privacySections: PrivacySection[] = [
     title: 'Cookie-uri, analiză și servicii externe',
     body: [
       'Site-ul public nu folosește cookie-uri, nu are instrumente de analiză a traficului și nu încarcă fonturi, hărți sau scripturi de la terți. Nicio pagină nu face cereri către alte domenii. Zona de administrare, accesibilă doar nouă, folosește un cookie de sesiune strict necesar pentru autentificare.',
-      'Singura informație salvată local este preferința dumneavoastră pentru tema deschisă sau întunecată, păstrată în `localStorage` sub cheia `moldovan-lux-theme`. Rămâne în browser, nu ne este transmisă și dispare când ștergeți datele site-ului.',
+      'Preferințele pentru temă și limbă sunt salvate local în browser, în localStorage, sub cheile dan-enache-theme și dan-enache-language. Nu ne sunt transmise și dispar când ștergeți datele site-ului.',
       'Serverul care găzduiește site-ul înregistrează, ca orice server web, adresa IP și pagina accesată, în jurnale tehnice folosite pentru funcționare și securitate.',
     ],
   },

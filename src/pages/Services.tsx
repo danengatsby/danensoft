@@ -1,133 +1,40 @@
+import { useLanguage } from '../hooks/useLanguage'
 import { Link } from 'react-router-dom'
 import PageIntro from '../components/PageIntro'
 import SectionHead from '../components/SectionHead'
+import ContactCTA from '../components/ContactCTA'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { serviceIcons } from '../components/serviceIcons'
-import { ArrowRight, ArrowUpRight, CheckIcon } from '../components/Icons'
-import { faq, services } from '../content/site'
+import { ArrowUpRight, CheckIcon } from '../components/Icons'
+import { faq } from '../content/site'
+import { serviceGroups } from '../content/presentation'
 
 export default function Services() {
-  usePageMeta(
-    'Servicii',
-    'Aplicații cloud, integrări și automatizări, AI aplicat, mentenanță și operare pe infrastructură proprie.',
-  )
-
+  const { t } = useLanguage()
+  usePageMeta('Servicii', 'Aplicații cloud, integrări și automatizări, AI aplicat, mentenanță și operare pe infrastructură proprie.')
   return (
     <>
-      <PageIntro
-        eyebrow="Servicii"
-        note="Cloud · SaaS · Integrări · AI · Mentenanță"
-        title={
-          <>
-            Cinci direcții, <em>impact măsurabil.</em>
-          </>
-        }
-        description="Fiecare serviciu include ce livrăm concret și tehnologiile pe care le folosim de obicei. Alegerea finală depinde de sistemele pe care le aveți deja."
-      />
-
-      <section className="section">
-        <div className="wrap">
-          {services.map((service, index) => {
-            const Icon = serviceIcons[service.id]
-            return (
-              <article
-                key={service.id}
-                id={service.id}
-                className="service-detail"
-                style={{ scrollMarginTop: '6rem' }}
-              >
-                <div className="service-detail__index">
-                  <span>{String(index + 1).padStart(2, '0')}</span>
-                  <Icon />
-                </div>
-                <div>
-                  <h2>{service.title}</h2>
-                  <div className="service-detail__cols">
-                    <div>
-                      <h3>Situația</h3>
-                      <p>{service.summary}</p>
-                    </div>
-                    <div>
-                      <h3>Cum lucrăm</h3>
-                      <p>{service.detail}</p>
-                    </div>
-                    <div>
-                      <h3>Primiți concret</h3>
-                      <ul className="service-deliverables">
-                        {service.deliverables.map((item) => (
-                          <li key={item}>
-                            <CheckIcon />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                  <ul className="tag-row">
-                    {service.stack.map((item) => (
-                      <li key={item} className="tag">
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </article>
-            )
-          })}
-        </div>
-      </section>
-
-      <section className="section" style={{ paddingTop: 0 }}>
-        <div className="wrap">
-          <SectionHead
-            eyebrow="Colaborare"
-            title={
-              <>
-                Întrebări puse <em>înainte de start.</em>
-              </>
-            }
-          >
-            <p>
-              Dacă întrebarea dumneavoastră nu apare aici, scrieți-ne — răspundem
-              chiar dacă răspunsul este că nu suntem potriviți pentru proiect.
-            </p>
-          </SectionHead>
-
-          <div className="grid grid--2">
-            {faq.map((item) => (
-              <article key={item.q} className="card">
-                <h3 className="h-card">{item.q}</h3>
-                <p>{item.a}</p>
-              </article>
-            ))}
-          </div>
-
-          <p style={{ marginTop: 'var(--s-6)' }}>
-            <Link to="/proiecte" className="text-link">
-              Vezi exemple de implementare <ArrowRight />
-            </Link>
-          </p>
-        </div>
-      </section>
-
-      <section className="wrap">
-        <div className="cta-band">
-          <div>
-            <p className="eyebrow">Nu sunteți sigur?</p>
-            <h2 style={{ marginTop: 'var(--s-4)' }}>
-              Descrieți situația <em>așa cum este.</em>
-            </h2>
-            <p className="prose">
-              Dacă nu este de competența noastră, vă spunem direct și, când putem,
-              recomandăm o alternativă.
-            </p>
-          </div>
-          <Link to="/contact" className="round-cta">
-            <span>Discutăm proiectul</span>
-            <ArrowUpRight />
-          </Link>
-        </div>
-      </section>
+      <PageIntro eyebrow={t("Servicii")} note={t("Dezvoltare · Integrări · Operare")} title={t("Servicii software, de la analiză la mentenanță.")} description={t("Cinci servicii, grupate în trei arii de expertiză. Consultați livrabilele și modul de lucru, apoi discutăm ce se potrivește proiectului dumneavoastră.")} />
+      <section className="section"><div className="wrap content-with-sidebar">
+        <aside className="page-sidebar">
+          <nav aria-label={t("Servicii disponibile")}><p className="sidebar-label">{t("Alegeți o arie")}</p>{serviceGroups.map((group) => <div className="sidebar-group" key={group.title}><strong>{t(group.title)}</strong><ul>{group.services.map((service) => <li key={service.id}><Link to={`/servicii#${service.id}`}>{t(service.title)}<ArrowUpRight /></Link></li>)}</ul></div>)}</nav>
+          <div className="sidebar-callout"><h2>{t("Un proiect existent?")}</h2><p>{t("Putem începe cu un audit și un plan de îmbunătățire.")}</p><Link to="/contact" className="text-link">{t("Discutăm situația ")}<ArrowUpRight /></Link></div>
+        </aside>
+        <div className="service-catalog">{serviceGroups.map((group) => <section className="service-family" key={group.title}>
+          <div className="service-family__head"><p className="eyebrow">{t(group.label)}</p><h2>{t(group.title)}</h2><p>{t(group.description)}</p></div>
+          {group.services.map((service) => { const Icon = serviceIcons[service.id]; return <article className="service-panel" id={service.id} key={service.id}>
+            <div className="service-panel__heading"><span className="business-icon"><Icon /></span><div><h3>{t(service.title)}</h3><p>{t(service.summary)}</p></div></div>
+            <div className="service-panel__deliverables"><h4>{t("Ce livrăm")}</h4><ul>{service.deliverables.map((item) => <li key={item}><CheckIcon /><span>{t(item)}</span></li>)}</ul></div>
+            <details className="service-panel__details"><summary>{t("Mod de lucru și tehnologii")}</summary><p>{t(service.detail)}</p><ul className="tag-row">{service.stack.map((item) => <li className="tag" key={item}>{t(item)}</li>)}</ul></details>
+            <Link to="/contact" className="service-panel__contact">{t("Discutați acest serviciu ")}<ArrowUpRight /></Link>
+          </article> })}
+        </section>)}</div>
+      </div></section>
+      <section className="section section--surface"><div className="wrap">
+        <SectionHead eyebrow={t("Întrebări frecvente")} title={t("Detaliile unei colaborări.")}><p>{t("Buget, proprietatea codului și suport după lansare.")}</p></SectionHead>
+        <div className="business-faq">{faq.map((item) => <details key={item.q}><summary>{t(item.q)}</summary><p>{t(item.a)}</p></details>)}</div>
+      </div></section>
+      <ContactCTA />
     </>
   )
 }

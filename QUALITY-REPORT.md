@@ -1,5 +1,188 @@
 # Raport de verificare
 
+## Publicare versionată, Git extern și backup — 24 septembrie 2026
+
+- `npm run build` produce candidatul în `.build/dist/`. nginx servește
+  `current`, către `releases/baseline-20260924/site`, pe HTTPS și portul 8090.
+  Migrarea păstrează conținutul public anterior; `dist/` rămâne copie de rezervă.
+- `npm run deploy` verifică HTML-ul, sitemap-ul, resursele și CSP, copiază într-un
+  release nou, apoi comută atomic linkul. Verifică identificatorul public,
+  paginile și 404; la eșec restaurează linkul anterior. `npm run rollback`
+  folosește versiunea precedentă. Resursele cu hash sunt păstrate separat.
+- ESLint, TypeScript, build-ul cu 11 pagini și 168 de teste au trecut.
+  Testele de infrastructură acoperă rollback, eșecul verificării HTTP,
+  publicări concurente, integritatea release-urilor, CSP și resurse lipsă.
+- nginx a trecut validarea configurației. După reload, Acasă și Contact au
+  răspuns 200, o adresă necunoscută 404, iar identificatorul baseline și
+  resursele JS/CSS au fost accesibile pe ambele adrese.
+- Backupul local a fost rulat prin systemd: succes. Copiile sunt validate
+  înainte de rotație, au permisiuni 600, iar valorile de retenție invalide
+  sunt respinse înaintea oricărei scrieri sau ștergeri.
+- Mecanismul SSH/rsync a fost verificat cu server SSH temporar și bază fictivă:
+  transfer, descărcare, SHA-256, integritate și marcaj `verified.json` reușite.
+  Această probă locală nu reprezintă un backup extern de producție.
+- Destinația bazei de date nu a fost furnizată; timerul extern nu este activat.
+  Sunt pregătite scriptul și modelele systemd/SSH. Copiile externe nu sunt
+  șterse automat; retenția se stabilește pe destinația aleasă.
+- Remote Git configurat: `https://github.com/danengatsby/danensoft.git`.
+  Exportul surselor și al istoricului este realizat separat prin conector;
+  baza SQLite, secretele și artefactele de runtime sunt excluse din Git.
+
+Limite: rollbackul acoperă numai site-ul static, nu serviciul Node sau baza.
+Fișierele de release și resursele partajate necesită curățare administrată în timp.
+Verificările HTTP de deploy nu înlocuiesc testarea vizuală a candidatului.
+
+## Coada persistentă SMTP — 24 septembrie 2026
+
+Activată în serviciul `danen-api` la 22:20 UTC, după o copie SQLite separată,
+verificată cu `PRAGMA integrity_check`. Migrarea adaugă tabelul `mail_jobs`;
+mesajele istorice nu sunt programate retroactiv pentru expediere.
+
+- Cererea și cele două notificări sunt persistate într-o singură tranzacție.
+  Notificarea administratorului și confirmarea vizitatorului se reîncearcă
+  independent, maximum 6 încercări, cu întârzieri de 1 min / 5 min / 15 min /
+  1 h / 6 h după eșecul precedent.
+- Administrarea afișează starea fiecărei notificări și permite reluarea numai
+  a celor eșuate. Acțiunea este protejată prin rol și verificarea originii.
+- Rezervările persistente împiedică preluarea simultană a aceleiași notificări
+  și permit recuperarea expedierilor întrerupte. Ștergerea cererii elimină
+  notificările în cascadă; o expediere deja începută nu poate fi retrasă.
+- ESLint, TypeScript și suita de 155 de teste au trecut. După adăugarea
+  testului de procesare periodică și izolarea suplimentară a testului de
+  administrare, cele 65 de teste backend au fost rerulate și au trecut
+  (156 de teste în total în proiect).
+- Testele acoperă tranzacția și rollbackul, programarea reîncercărilor,
+  recuperarea printr-o conexiune nouă, lease-uri expirate, procesoare concurente,
+  oprirea controlată, SMTP neconfigurat, reluarea manuală, autorizarea,
+  protecția originii și ștergerea în cascadă. SMTP este simulat în teste.
+- Chromium: administrarea cu date fictive la 360 și 1440 px, în ambele teme,
+  fără overflow sau încălcări axe serious/critical după corectarea contrastului
+  butonului de ștergere în tema întunecată. Raport:
+  `qa-screens/mail-queue-admin.json`; capturi `mail-queue-admin-*.png`.
+- După activare: serviciu activ, tabelul cozii prezent și gol, integritate
+  SQLite validă, zero erori de chei externe. Pe HTTPS, autentificarea răspunde
+  200, iar `/admin` redirecționează vizitatorii neautentificați cu 302.
+- Nu au fost expediate e-mailuri reale de test și nu au fost create mesaje
+  în producție. Acceptarea SMTP și primirea în Inbox nu au fost reverificate.
+
+Limită: acceptarea SMTP urmată de oprirea procesului înainte de persistarea
+rezultatului poate duce la un duplicat la reîncercare. Identificatorul e-mailului
+rămâne stabil, dar deduplicarea destinatarului nu este garantată. Restaurarea
+unui backup vechi poate relua notificări acceptate după momentul copiei.
+
+## Studii de caz în portofoliu — 24 septembrie 2026
+
+Implementare pregătită în surse, verificată într-o copie temporară a proiectului.
+Nu a fost publicată în `dist/` pe serverul de producție în această rundă.
+
+- Patru rute noi pentru Contabo, PCS, Poetio și RVR Taxi; cardurile duc la
+  paginile interne, iar accesul extern este un buton distinct.
+- Conținutul existent (context, soluție, rezultat) este afișat în RO și EN.
+  Rolul și contribuțiile personale au suport în model și interfață, dar nu
+  sunt completate până la confirmarea autorului.
+- ESLint, TypeScript și 139 de teste în 9 fișiere au trecut.
+- Build-ul izolat a generat 11 pagini HTML, inclusiv studiile de caz.
+- Chromium: 32 de combinații pentru cele 4 pagini noi × RO/EN × întunecat/deschis
+  × 360/1440 px, fără overflow, excepții JavaScript sau încălcări axe
+  serious/critical. Canonical verificat pentru fiecare rută.
+- Verificate navigarea din Acasă către studiu, întoarcerea în portofoliu și
+  afișarea paginii 404 pentru un proiect necunoscut. Serverul Vite de
+  previzualizare nu verifică statusul HTTP 404 din nginx.
+- Rezultate: `qa-screens/case-study-validation.json`; capturi în
+  `qa-screens/case-study-preview-desktop.png` și `case-study-preview-mobile.png`.
+- Scriptul general QA include acum noile rute (176 de combinații); matricea
+  completă nu a fost rerulată în această rundă. Nu s-au trimis mesaje reale.
+
+## Comutator RO / EN — 24 septembrie 2026
+
+Antetul include un selector de limbă accesibil, vizibil pe desktop și mobil.
+Paginile publice, navigarea, titlurile și descrierile documentului, textele
+accesibile și formularul sunt traduse în engleză. Alegerea se păstrează în
+browser, se sincronizează între file și nu resetează formularul sau filtrele.
+Nota de confidențialitate descrie și stocarea preferinței de limbă.
+
+Validare:
+
+- ESLint, TypeScript, 113 teste și build-ul cu 7 pagini prerandate au trecut.
+- QA complet: 112 combinații (7 pagini × 4 lățimi × 2 teme × 2 limbi),
+  fără erori de consolă, overflow, răspunsuri HTTP neașteptate sau încălcări
+  axe serious/critical. Rezultate în `qa-screens/summary.json`.
+- Cele șase teste noi verifică schimbarea limbii și metadatelor, persistența,
+  sincronizarea între file, stocarea blocată, păstrarea filtrelor și a datelor
+  formularului, traducerea erorilor și trimiterea valorilor originale.
+- Pe HTTPS, verificarea în Chromium confirmă comutarea de la tastatură,
+  navigarea mobilă, persistența după reîncărcare și păstrarea datelor formularului.
+- Verificări suplimentare ale antetului la 320, 576, 1100 și 1280 px în ambele
+  limbi și teme: 16 combinații fără overflow, selectorul de limbă vizibil.
+  Rezultate în `qa-screens/language-interactions.json`.
+- Toate cele șapte pagini au fost parcurse în engleză, inclusiv detaliile
+  extensibile. Textele originale din dicționar nu au rămas în conținutul afișat.
+
+Formularele din teste folosesc răspunsuri simulate. Nu s-au expediat e-mailuri
+reale pentru această modificare. Conturile, administrarea și e-mailurile
+automate rămân în română; selectorul acoperă site-ul public de prezentare.
+
+## Reorganizare în stil de companie software — 24 septembrie 2026
+
+Toate cele șapte pagini publice au o structură comună, cu titluri compacte,
+fundal verde-albastru închis, informații grupate în panouri și un subsol mai scurt.
+Acasă rezumă oferta, cele patru proiecte publicate și procesul de colaborare.
+Serviciile sunt grupate în trei arii, cu navigare laterală și detalii extensibile.
+Despre reunește profilul, principiile și procesul; Contact grupează formularul,
+datele de contact și pașii următori. Confidențialitate are un cuprins navigabil.
+
+Validare:
+
+- ESLint, TypeScript, toate cele 107 teste și build-ul cu 7 pagini prerandate
+  au trecut. Configurația CSP corespunde scripturilor inline din build.
+- QA complet în Chromium: 56 combinații, fără erori de consolă, răspunsuri HTTP
+  neașteptate, overflow orizontal sau încălcări axe serious/critical.
+  Rezultatele sunt în `qa-screens/summary.json`.
+- Verificate pe domeniul HTTPS: ancorele serviciilor și confidențialității,
+  detaliile extensibile cu mouse și tastatură, întrebările frecvente,
+  cele patru linkuri de proiect și filtrele SaaS/Mobil/Toate.
+- Verificate meniul mobil, închiderea cu Escape, restaurarea focusului și
+  închiderea după navigare. Acasă și Contact nu au overflow nici la 320 px,
+  în ambele teme. Rezultate în `qa-screens/corporate-interactions.json`.
+- Formularul a fost verificat în browser pentru câmpuri invalide și succes,
+  cu răspuns API simulat. Nu s-au trimis mesaje reale pentru această reorganizare;
+  notificarea administratorului și confirmarea expeditorului sunt păstrate.
+- După ajustarea spațiului ancorelor sub antet, Servicii, Confidențialitate și
+  Proiecte au fost reverificate pe HTTPS în 12 combinații (360/1440 px, ambele
+  teme): HTTP 200, fără overflow sau încălcări axe serious/critical.
+  Rezultate în `qa-screens/corporate-final.json`.
+
+## Istoricul verificărilor
+
+## Actualizare UI — 22 septembrie 2026
+
+Interfața publică folosește acum o paletă fildeș/verde, titluri mai mari,
+spațiere aerisită și componente coerente în ambele teme. Pagina principală
+include o ilustrație cloud în HTML/SVG, carduri de servicii, un proiect Contabo
+pus în evidență și etapele colaborării. Fundalul decorativ cu cod a fost eliminat.
+Faviconul și imaginea socială au fost aliniate la noua paletă.
+
+Meniul mobil are buton de închidere vizibil și fundal pe întreaga înălțime,
+se închide și la alegerea paginii curente și blochează derularea din fundal.
+Linkurile către servicii respectă fragmentul URL și spațiul ocupat de antet.
+
+Validare:
+
+- Lint, TypeScript, cele 95 de teste existente și build-ul cu 7 pagini
+  prerandate au trecut.
+- QA în Chromium pe HTTPS: 56 de combinații (7 pagini × 4 lățimi × 2 teme),
+  fără erori de consolă, overflow orizontal sau încălcări axe serious/critical.
+- Verificări de interacțiune pe HTTPS: meniul mobil (buton, fundal, Escape și
+  pagina curentă), cele 5 ancore de servicii, accesul direct la o ancoră,
+  filtrele portofoliului, persistența temei și preferința de mișcare redusă.
+- Ajustarea finală a siglei și titlului pentru ecrane înguste a fost verificată
+  separat la 320 și 360 px, în ambele teme.
+- Capturile și raportul automat sunt în `qa-screens/`. Verificările publice
+  nu au trimis mesaje și nu au creat conturi.
+
+Build-ul rezultat este servit de nginx din `dist/`. Verificările de browser
+acoperă Chromium; nu reprezintă un audit manual complet de accesibilitate.
+
 ## Actualizare — 20 septembrie 2026
 
 Corecții verificate și activate în producție:
@@ -218,3 +401,30 @@ etichetă pentru fiecare câmp de formular.
   JSON-LD și HTML prerandat pentru cele șase rute publice.
 - Contabo este prezentat ca produs real; celelalte proiecte rămân marcate drept
   demonstrații, fără cifre sau testimoniale inventate.
+
+## Redesign Dan Enache — 24 septembrie 2026
+
+Identitatea comercială este acum Dan Enache: antet, subsol, pagini, metadate,
+favicon și imagine socială. Datele operatorului juridic și adresa de contact
+existente sunt păstrate. Cheia de temă rămâne compatibilă cu vizitele anterioare.
+
+Designul folosește fildeș, teracotă și grafit, o ilustrație proprie HTML/SVG,
+servicii într-o grilă editorială, prezentarea Contabo și o secțiune personală.
+Tema întunecată și preferința de mișcare redusă sunt respectate.
+
+Validare:
+- ESLint, TypeScript și toate cele 95 de teste existente au trecut.
+- Build-ul final a generat cele 7 pagini prerandate.
+- QA complet: 56 combinații (7 rute × 4 dimensiuni × 2 teme), fără erori
+  de consolă, status HTTP sau overflow; o singură problemă de contrast,
+  cauzată de suprapunerea ilustrației pe mobil, a fost identificată și corectată.
+- După corecție, pagina principală de pe domeniul HTTPS a fost reverificată
+  la 320, 360 și 390 px în ambele teme: zero încălcări axe serious/critical,
+  zero overflow, zero erori de consolă, HTTP 200. Rezultatele sunt în
+  `qa-screens/redesign-validation.json`; raportul inițial rămâne în `summary.json`.
+- Verificate în browser: navigarea mobilă, închiderea meniului după navigare,
+  filtrele SaaS/Mobil, comutarea temei și ancora `/servicii#cloud`.
+- Hash-ul CSP pentru datele structurate a fost adăugat, configurația nginx
+  validată și reîncărcată. Domeniul public servește noul build cu HTTP 200.
+
+Nu au fost trimise mesaje reale prin formular în timpul verificărilor.

@@ -1,6 +1,7 @@
 import { DatabaseSync } from 'node:sqlite'
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
+import { createMailQueue } from './mail-queue.mjs'
 
 /** Calea bazei de date. În producție este setată din unitatea systemd. */
 export const DB_PATH = process.env.DANEN_DB ?? '/var/lib/danen/messages.db'
@@ -11,6 +12,7 @@ export const db = new DatabaseSync(DB_PATH)
 
 db.exec('PRAGMA journal_mode = WAL')
 db.exec('PRAGMA foreign_keys = ON')
+db.exec('PRAGMA busy_timeout = 5000')
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
@@ -72,6 +74,7 @@ db.exec('CREATE INDEX IF NOT EXISTS idx_messages_created ON messages (created_at
 db.exec('CREATE INDEX IF NOT EXISTS idx_messages_user ON messages (user_id)')
 
 export const STATUSES = ['primit', 'în lucru', 'ofertat', 'închis']
+export const mailQueue = createMailQueue(db)
 
 const q = {
   insertMessage: db.prepare(`
@@ -121,7 +124,23 @@ export const messages = {
       m.message,
       userId,
     ),
-  list: (limit = 500) => q.listMessages.all(limit),
+  addWithNotifications(m, userId, jobs) {
+    db.exec('BEGIN IMMEDIATE')
+    try {
+      const result = messages.add(m, userId)
+      mailQueue.enqueue(result.lastInsertRowid, jobs)
+      db.exec('COMMIT')
+      return result
+    } catch (error) {
+      db.exec('ROLLBACK')
+      throw error
+    }
+  },
+  list(limit = 500) {
+    const rows = q.listMessages.all(limit)
+    const notifications = mailQueue.forMessages(rows.map((row) => row.id))
+    return rows.map((row) => ({ ...row, notifications: notifications.get(row.id) ?? [] }))
+  },
   listForUser: (userId) => q.listForUser.all(userId),
   markRead: (id) => q.markRead.run(new Date().toISOString(), id),
   setStatus: (id, status) => q.setStatus.run(status, id),

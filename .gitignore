@@ -1,5 +1,12 @@
 node_modules
 dist
+.build/
+releases/
+current
+previous
+shared-assets/
+.deploy-lock/
+.deploy-*.tmp
 coverage
 *.local
 .env.local
@@ -15,3 +22,12 @@ qa-screens/
 #
 # Secretele NU stau aici. Parolele SMTP și restul variabilelor serviciului sunt
 # în /etc/danen/api.env, în afara depozitului, citite de unitatea systemd.
+
+# Date și chei private în afara depozitului
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.pem
+*.key
+*.bundle

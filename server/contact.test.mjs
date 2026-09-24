@@ -183,3 +183,71 @@ it('răspunde 400 la Host sau URL invalid și continuă să servească cereri', 
     expect((await api('/cont/autentificare')).status).toBe(200)
   }
 })
+
+it.each(['first,last@example.test', 'first;last@example.test', '<visitor@example.test>', 'Visitor <visitor@example.test>'])(
+  'respinge adresa %s înainte de salvare și expedierea confirmării',
+  async (email) => {
+    const before = db.prepare('SELECT COUNT(*) AS n FROM messages').get().n
+    const response = await api('/api/contact', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Test', email, message: 'Un mesaj valid pentru verificare.' }),
+    })
+    expect(response.status).toBe(422)
+    expect(await response.json()).toMatchObject({ fields: ['email'] })
+    expect(db.prepare('SELECT COUNT(*) AS n FROM messages').get().n).toBe(before)
+  },
+)
+
+it('persistă ambele notificări înainte de 201 chiar și fără SMTP configurat', async () => {
+  const response = await api('/api/contact', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: 'Queue Test', email: 'queue@example.invalid', message: 'Cerere validă pentru coada persistentă.' }),
+  })
+  expect(response.status).toBe(201)
+  const message = db.prepare('SELECT id FROM messages ORDER BY id DESC LIMIT 1').get()
+  const jobs = db.prepare('SELECT kind, status, attempts FROM mail_jobs WHERE message_id = ? ORDER BY id').all(message.id)
+  expect(jobs.map((job) => ({ ...job }))).toEqual([
+    { kind: 'admin', status: 'pending', attempts: 0 },
+    { kind: 'confirmation', status: 'pending', attempts: 0 },
+  ])
+})
+
+it('protejează reluarea notificărilor prin rol și origine, fără a repeta notificările acceptate', async () => {
+  const cookie = await register('queue-admin@example.invalid')
+  expect((await api('/api/contact', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: 'Admin Queue Test', email: 'admin-queue@example.invalid', message: 'Cerere pentru verificarea administrării cozii.' }),
+  })).status).toBe(201)
+  const message = db.prepare('SELECT id FROM messages ORDER BY id DESC LIMIT 1').get()
+  const path = `/admin/messages/${message.id}/retry-mail`
+  expect((await api(path, { method: 'POST' })).status).toBe(403)
+  expect((await api(path, { method: 'POST', headers: { Cookie: cookie } })).status).toBe(403)
+
+  const writer = new DatabaseSync(join(directory, 'messages.db'))
+  try {
+    writer.prepare("UPDATE users SET role = 'admin' WHERE email = ?").run('queue-admin@example.invalid')
+    writer.prepare("UPDATE mail_jobs SET status = 'failed', attempts = 6, last_error = ? WHERE message_id = ? AND kind = 'admin'")
+      .run('<img src=x onerror=alert(1)>', message.id)
+    writer.prepare("UPDATE mail_jobs SET status = 'sent', sent_at = ?, attempts = 1 WHERE message_id = ? AND kind = 'confirmation'")
+      .run(new Date().toISOString(), message.id)
+    const page = await api('/admin', { headers: { Cookie: cookie } })
+    expect(page.status).toBe(200)
+    const html = await page.text()
+    expect(html).toContain('Reîncearcă notificările eșuate')
+    expect(html).toContain('Acceptat de SMTP')
+    expect(html).toContain('SMTP neconfigurat')
+    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;')
+    expect(html).not.toContain('<img src=x')
+    const rejected = await api(path, { method: 'POST', headers: { Cookie: cookie, Origin: 'https://foreign.invalid' } })
+    expect(rejected.status).toBe(403)
+    expect(db.prepare("SELECT status FROM mail_jobs WHERE message_id = ? AND kind = 'admin'").get(message.id).status).toBe('failed')
+    const accepted = await api(path, { method: 'POST', headers: { Cookie: cookie, Origin: new URL(endpoint).origin } })
+    expect(accepted.status).toBe(302)
+    const jobs = db.prepare('SELECT status, attempts FROM mail_jobs WHERE message_id = ? ORDER BY id').all(message.id)
+    expect(jobs.map((job) => [job.status, job.attempts])).toEqual([['pending', 0], ['sent', 1]])
+
+    const deleted = await api(`/admin/messages/${message.id}/delete`, { method: 'POST', headers: { Cookie: cookie, Origin: new URL(endpoint).origin } })
+    expect(deleted.status).toBe(302)
+    expect(db.prepare('SELECT COUNT(*) AS n FROM mail_jobs WHERE message_id = ?').get(message.id).n).toBe(0)
+  } finally { writer.close() }
+})

@@ -34,6 +34,7 @@ const STYLE = `
     cursor:pointer; text-decoration:none; display:inline-block }
   button:hover { border-color:var(--ink) }
   button.danger { color:#a3221a; border-color:#d8b3ae }
+  @media (prefers-color-scheme: dark) { button.danger { color:#ffb4ab; border-color:#98625c } }
   button.primary { background:var(--accent); border-color:var(--accent); color:#fff }
   .card { border:1px solid var(--rule); border-radius:12px; background:var(--raised);
     padding:1.25rem; margin-bottom:1rem }
@@ -41,7 +42,11 @@ const STYLE = `
   .meta { display:flex; flex-wrap:wrap; gap:.35rem 1rem; margin:.35rem 0 .9rem }
   .body { white-space:pre-wrap; overflow-wrap:anywhere; padding:.9rem 1rem; border-radius:8px;
     background:var(--paper); border:1px solid var(--rule) }
-  .actions { display:flex; gap:.5rem; margin-top:.9rem }
+  .actions { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.9rem }
+  .mail-status { margin-top:1rem; padding-top:.8rem; border-top:1px solid var(--rule) }
+  .mail-status h3 { font-size:.85rem; margin-bottom:.4rem }
+  .mail-status ul { padding-left:1.2rem; overflow-wrap:anywhere }
+  .mail-status li + li { margin-top:.4rem }
   label { display:block; font-size:.8rem; font-weight:600; margin-bottom:.35rem }
   select { font:inherit; font-size:.8rem; padding:.4rem; border:1px solid var(--rule);
     border-radius:6px; background:var(--raised); color:var(--ink) }
@@ -111,7 +116,29 @@ function formatDate(iso) {
   }).format(date)
 }
 
-export function messagesPage(rows, { insecure } = {}) {
+function notificationStatus(job) {
+  if (job.status === 'sent') return `Acceptat de SMTP · ${formatDate(job.sent_at)}`
+  if (job.status === 'sending') return `În curs de expediere · încercarea ${job.attempts}`
+  if (job.status === 'failed') return `Necesită intervenție · ${job.attempts} încercări`
+  return job.attempts
+    ? `Reîncercare programată: ${formatDate(job.next_attempt_at)} · ${job.attempts} încercări efectuate`
+    : 'În așteptare'
+}
+
+function notificationsPanel(row) {
+  const jobs = row.notifications ?? []
+  if (!jobs.length) return '<p class="muted mail-status">Notificări e-mail: fără istoric de livrare pentru acest mesaj.</p>'
+  return `<section class="mail-status" aria-label="Notificări pentru mesajul ${row.id}">
+    <h3>Notificări e-mail</h3>
+    <ul class="muted">${jobs.map((job) => `<li><strong>${job.kind === 'admin' ? 'Administrator' : 'Confirmare vizitator'}</strong>:
+      ${escapeHtml(notificationStatus(job))}
+      ${job.last_error ? `<br>${escapeHtml(job.last_error)}` : ''}</li>`).join('')}</ul>
+    ${jobs.some((job) => job.status === 'failed') ? `<form method="post" action="/admin/messages/${row.id}/retry-mail" style="margin-top:.7rem">
+      <button type="submit">Reîncearcă notificările eșuate</button></form>` : ''}
+  </section>`
+}
+
+export function messagesPage(rows, { insecure, mailConfigured = true } = {}) {
   const unread = rows.filter((row) => !row.read_at).length
 
   const cards = rows
@@ -129,6 +156,7 @@ export function messagesPage(rows, { insecure } = {}) {
           ${row.read_at ? '<span class="muted">citit</span>' : '<span class="muted"><strong>necitit</strong></span>'}
         </div>
         <div class="body">${escapeHtml(row.message)}</div>
+        ${notificationsPanel(row)}
         <div class="actions">
           ${
             row.read_at
@@ -164,6 +192,8 @@ export function messagesPage(rows, { insecure } = {}) {
         </div>
       </header>
       ${insecure ? '<p class="warn"><strong>Conexiune necriptată.</strong> Datele de pe această pagină circulă în clar. Activați HTTPS pentru acces din afara serverului.</p>' : ''}
+      ${!mailConfigured ? '<p class="warn"><strong>SMTP neconfigurat.</strong> Notificările sunt păstrate în coadă. Expedierea începe după configurarea SMTP și repornirea serviciului.</p>' : ''}
+      <p class="muted" style="margin-bottom:1rem">Starea „Acceptat de SMTP” confirmă predarea către serverul de e-mail, nu sosirea în Inbox. Fiecare notificare are maximum 6 încercări automate de expediere.</p>
       ${rows.length ? cards : '<p class="empty">Niciun mesaj primit încă.</p>'}
     </div>`,
   )

@@ -1,8 +1,12 @@
 import { useEffect } from 'react'
 import { company } from '../content/site'
+import { useLanguage } from './useLanguage'
 
 /** Setează titlul documentului și meta description pentru pagina curentă. */
-export function usePageMeta(title: string, description: string) {
+export function usePageMeta(sourceTitle: string, sourceDescription: string) {
+  const { t, language } = useLanguage()
+  const title = t(sourceTitle)
+  const description = t(sourceDescription)
   useEffect(() => {
     const fullTitle = `${title} · ${company.name}`
     const rawPath = window.location.pathname.replace(/\/+$/, '')
@@ -30,6 +34,7 @@ export function usePageMeta(title: string, description: string) {
     }
 
     setMeta('meta[property="og:title"]', 'property', 'og:title', fullTitle)
+    setMeta('meta[property="og:locale"]', 'property', 'og:locale', language === 'en' ? 'en_GB' : 'ro_RO')
     setMeta('meta[property="og:description"]', 'property', 'og:description', description)
     setMeta('meta[property="og:url"]', 'property', 'og:url', canonicalUrl)
     setMeta('meta[name="twitter:title"]', 'name', 'twitter:title', fullTitle)
@@ -42,5 +47,5 @@ export function usePageMeta(title: string, description: string) {
       document.head.appendChild(canonical)
     }
     canonical.href = canonicalUrl
-  }, [title, description])
+  }, [title, description, language])
 }

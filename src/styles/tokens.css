@@ -1,34 +1,33 @@
 /* ── Design tokens ─────────────────────────────────────────────────────────
-   Tema implicită este cea deschisă (hârtie caldă). Tema întunecată (albastru
-   închis) se activează prin `data-theme="dark"` pe <html>, setat de
-   comutatorul din antet și de scriptul din index.html.
+   Tema implicită este verde-albastru închis. Tema deschisă este opțională.
+   Scriptul din index.html și comutatorul din antet setează data-theme.
    ------------------------------------------------------------------------ */
 
 :root {
   color-scheme: light;
 
-  --c-paper: #f1eee7;
-  --c-paper-raised: #f8f6f1;
-  --c-paper-sunken: #e9e5da;
-  --c-ink: #1b1c1a;
-  --c-ink-muted: #5c5b54;
-  --c-ink-subtle: #6b6a62;
-  --c-rule: #cbc7bc;
-  --c-rule-strong: #aeaa9e;
+  --c-paper: #f8f5f0;
+  --c-paper-raised: #fffcf8;
+  --c-paper-sunken: #efeae3;
+  --c-ink: #252825;
+  --c-ink-muted: #606158;
+  --c-ink-subtle: #636359;
+  --c-rule: #e1dcd3;
+  --c-rule-strong: #c3bcb0;
 
-  --c-accent: #b3341f;
-  --c-accent-hover: #8d2716;
-  --c-accent-soft: #f7e6e1;
-  --c-accent-ink: #ffffff;
+  --c-accent: #a4452c;
+  --c-accent-hover: #81351f;
+  --c-accent-soft: #f2e4d9;
+  --c-accent-ink: #fffcf8;
 
   /* Suprafața întunecată folosită pentru benzile de contrast. */
-  --c-deep: #1b1c1a;
-  --c-deep-raised: #292b28;
-  --c-deep-rule: #454742;
-  --c-deep-ink: #f4f1e9;
-  --c-deep-ink-muted: #b0b1aa;
-  --c-deep-accent: #ff8b70;
-  --c-lime: #d8f55f;
+  --c-deep: #252825;
+  --c-deep-raised: #333730;
+  --c-deep-rule: #50564b;
+  --c-deep-ink: #fbf5ea;
+  --c-deep-ink-muted: #c8cabe;
+  --c-deep-accent: #edbb99;
+  --c-lime: #edbb99;
 
   --c-ok: #1c6b45;
   --c-ok-soft: #e6f2ea;
@@ -49,15 +48,16 @@
   --font-serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 
-  /* Titluri sobre, text de bază neschimbat. */
+  /* Ierarhie editorială cu titluri ample și text de bază compact. */
   --t-xs: 0.72rem;
   --t-sm: 0.8125rem;
   --t-base: 0.9375rem;
   --t-md: clamp(0.98rem, 0.94rem + 0.18vw, 1.08rem);
+  --t-heading-small: clamp(.95rem, .9rem + .2vw, 1.05rem);
   --t-lg: clamp(1rem, 0.95rem + 0.28vw, 1.18rem);
-  --t-xl: clamp(1.28rem, 1.1rem + 0.8vw, 1.7rem);
-  --t-2xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.15rem);
-  --t-3xl: clamp(1.75rem, 1.35rem + 1.8vw, 2.6rem);
+  --t-xl: clamp(1.45rem, 1.1rem + 1.2vw, 2.1rem);
+  --t-2xl: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+  --t-3xl: clamp(1.9rem, 1.3rem + 2vw, 3.2rem);
 
   --s-1: 0.25rem;
   --s-2: 0.5rem;
@@ -68,15 +68,15 @@
   --s-7: 3rem;
   --s-8: 4rem;
   --s-9: 6rem;
-  --s-section: clamp(2.75rem, 5.5vw, 5rem);
+  --s-section: clamp(3.5rem, 7vw, 6.5rem);
 
-  --w-page: 80rem;
+  --w-page: 82rem;
   --w-prose: 34rem;
   --gutter: clamp(1rem, 4vw, 2.5rem);
 
-  --radius-sm: 6px;
+  --radius-sm: 8px;
   --radius: 10px;
-  --radius-lg: 18px;
+  --radius-lg: 16px;
 
   --shadow-sm: 0 1px 2px rgb(27 28 26 / 0.07);
   --shadow-md: 0 24px 70px rgb(27 28 26 / 0.12);
@@ -88,26 +88,27 @@
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --c-paper: #0c1524;
-  --c-paper-raised: #121e33;
-  --c-paper-sunken: #091120;
-  --c-ink: #e9eef7;
-  --c-ink-muted: #a6b5cd;
-  --c-ink-subtle: #91a1ba;
-  --c-rule: #22304a;
-  --c-rule-strong: #3a4c69;
+  --c-paper: #082b33;
+  --c-paper-raised: #103940;
+  --c-paper-sunken: #06242c;
+  --c-ink: #eff7f5;
+  --c-ink-muted: #bdd0d2;
+  --c-ink-subtle: #a8c2c6;
+  --c-rule: #2c535c;
+  --c-rule-strong: #53777e;
 
-  --c-accent: #f4926a;
-  --c-accent-hover: #f8ab8b;
-  --c-accent-soft: #2a1a12;
-  --c-accent-ink: #16232e;
+  --c-accent: #9fddd0;
+  --c-accent-hover: #c0eee3;
+  --c-accent-soft: #15434a;
+  --c-accent-ink: #062a31;
 
-  --c-deep: #060d18;
-  --c-deep-raised: #101b2d;
-  --c-deep-rule: #24344e;
-  --c-deep-ink: #eef2f8;
-  --c-deep-ink-muted: #9fb0c8;
-  --c-deep-accent: #f4926a;
+  --c-deep: #051f28;
+  --c-deep-raised: #0e333d;
+  --c-deep-rule: #2b505b;
+  --c-deep-ink: #eff7f5;
+  --c-deep-ink-muted: #bdd0d2;
+  --c-deep-accent: #9fddd0;
+  --c-lime: #a7dfcb;
 
   --c-ok: #63d3a0;
   --c-ok-soft: #0f2a20;

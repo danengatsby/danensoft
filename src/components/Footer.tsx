@@ -1,86 +1,19 @@
+import { useLanguage } from '../hooks/useLanguage'
 import { Link } from 'react-router-dom'
-import { company, legalNav, nav, serverNav, social } from '../content/site'
-
-const [firstWord, ...restWords] = company.name.split(' ')
+import { company, legalNav, nav, serverNav, services } from '../content/site'
+import { ArrowUpRight } from './Icons'
 
 export default function Footer() {
+  const { t } = useLanguage()
   return (
-    <footer className="site-footer">
-      <div className="wrap">
-        <div className="site-footer__grid">
-          <div>
-            <Link to="/" className="brand">
-              <span className="brand__mark" aria-hidden="true">
-                {company.initials}
-              </span>
-              <span>
-                {firstWord} <b>{restWords.join(' ')}</b>
-              </span>
-            </Link>
-            <p className="site-footer__statement">
-              Aplicații cloud și produse SaaS pentru procese care nu mai încap în
-              foi de calcul.
-            </p>
-          </div>
-
-          <div className="site-footer__cols">
-            <div>
-              <h2>Navigare</h2>
-              <ul>
-                {nav.map((item) => (
-                  <li key={item.to}>
-                    <Link to={item.to}>{item.label}</Link>
-                  </li>
-                ))}
-                {legalNav.map((item) => (
-                  <li key={item.to}>
-                    <Link to={item.to}>{item.label}</Link>
-                  </li>
-                ))}
-                {/* Zonă privată, servită de serviciul Node: navigare completă, nu prin router. */}
-                {serverNav.map((item) => (
-                  <li key={item.to}>
-                    <a href={item.to} rel="nofollow">
-                      {item.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h2>Contact</h2>
-              <ul>
-                <li>
-                  <a href={`mailto:${company.email}`}>{company.email}</a>
-                </li>
-                {company.phone && (
-                  <li>
-                    <a href={`tel:${company.phone.replace(/\s/g, '')}`}>
-                      {company.phone}
-                    </a>
-                  </li>
-                )}
-                <li className="muted">{company.location}</li>
-                {social.map((item) => (
-                  <li key={item.href}>
-                    <a href={item.href} target="_blank" rel="noreferrer noopener">
-                      {item.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div className="site-footer__bar">
-          <span>
-            © {new Date().getFullYear()} {company.name} · {company.legal}
-          </span>
-          <span>Aplicații cloud · SaaS · Integrări · Mentenanță</span>
-        </div>
+    <footer className="site-footer company-footer"><div className="wrap">
+      <div className="company-footer__grid">
+        <div className="company-footer__intro"><Link to="/" className="brand"><span className="brand__mark" aria-hidden="true">{company.initials}</span><span>{t("Dan ")}<b>{t("Enache")}</b></span></Link><p>{t("Dezvoltare software, integrări și operare cloud pentru afaceri.")}</p><span className="company-footer__location">{t(company.location)}</span></div>
+        <div><h2>{t("Companie")}</h2><ul>{nav.map((item) => <li key={item.to}><Link to={item.to}>{t(item.label)}</Link></li>)}{serverNav.map((item) => <li key={item.to}><a href={item.to} rel="nofollow">{t(item.label)}</a></li>)}</ul></div>
+        <div><h2>{t("Servicii")}</h2><ul>{services.map((service) => <li key={service.id}><Link to={`/servicii#${service.id}`}>{t(service.title)}</Link></li>)}</ul></div>
+        <div className="company-footer__contact"><h2>{t("Discutăm un proiect?")}</h2><a href={`mailto:${company.email}`}>{t(company.email)}<ArrowUpRight /></a><p>{t("Revenim în maximum două zile lucrătoare.")}</p><Link to="/contact" className="text-link">{t("Trimiteți o solicitare ")}<ArrowUpRight /></Link></div>
       </div>
-    </footer>
+      <div className="site-footer__bar"><span>© {new Date().getFullYear()} {t(company.name)}{t(" · Dezvoltare software")}</span>{legalNav.map((item) => <Link key={item.to} to={item.to}>{t(item.label)}</Link>)}</div>
+    </div></footer>
   )
 }
