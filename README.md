@@ -20,6 +20,10 @@ npm run dev        # server de dezvoltare
 | `npm test`          | Vitest                                   |
 | `npm run qa`        | Verificare în Chromium; acceptă o adresă: `npm run qa -- https://danenachesoft.space` |
 | `npm run csp:hash`  | Recalculează hash-ul CSP după modificarea scriptului din `index.html` |
+| `npm run backup`    | Copie de siguranță imediată a bazei de mesaje |
+
+Proiectul este sub git din 15 august 2026. Depozitul este local, fără copie la
+distanță: `git remote add origin …` când există unde.
 
 ## Pagini
 
@@ -117,7 +121,39 @@ server și salvează mesajele într-o bază SQLite. Nu există furnizor extern.
 | Bază de date | `/var/lib/danen/messages.db` (proprietar: utilizatorul `danen`) |
 | Conturi și parole (hash) | tabelul `users` din baza de date |
 | Serviciu | `systemctl status danen-api` |
+| Copii de siguranță | `/var/backups/danen`, zilnic (`systemctl status danen-backup.timer`) |
 | Zonă de administrare | `/admin` |
+
+### Copii de siguranță
+
+`danen-backup.timer` rulează zilnic la 03:20 și păstrează ultimele 14 copii în
+`/var/backups/danen`. Fiecare copie este verificată imediat după scriere
+(`PRAGMA integrity_check` plus numărarea rândurilor); dacă verificarea pică,
+unitatea eșuează și se vede în `systemctl status danen-backup`.
+
+```bash
+sudo -u danen node scripts/backup.mjs   # copie imediată, în afara programului
+systemctl list-timers danen-backup      # când rulează următoarea
+journalctl -u danen-backup -n 20        # ce s-a întâmplat la ultimele rulări
+```
+
+Copierea folosește `VACUUM INTO`, nu `cp`: baza rulează în modul WAL, deci
+scrierile recente stau în `messages.db-wal`, iar o copiere a fișierului
+principal ar da o copie veche sau incoerentă. Serviciul poate rămâne pornit în
+timpul copierii.
+
+Restaurare (serviciul trebuie oprit, altfel scrie peste):
+
+```bash
+systemctl stop danen-api
+sudo -u danen cp /var/backups/danen/messages-<data>.db /var/lib/danen/messages.db
+sudo -u danen rm -f /var/lib/danen/messages.db-wal /var/lib/danen/messages.db-shm
+systemctl start danen-api
+```
+
+Copiile stau pe **același disc** ca baza: apără de ștergere accidentală și de
+stricarea fișierului, nu de pierderea serverului. Pentru asta ar trebui duse în
+altă parte.
 
 Serviciul folosește module Node (`node:sqlite`, `node:crypto`, `node:http`) și, doar
 pentru notificările prin e-mail, `nodemailer`.
@@ -168,8 +204,11 @@ deja cont, doar îi ridică rolul. Parola în clar nu se salvează nicăieri.
 
 ### Protecții
 
-- limitare de rată: 5 mesaje / 10 minute, 8 autentificări / 15 minute și 5 conturi
-  noi / oră, per IP
+- limitare de rată per IP: 5 mesaje / 10 minute, 8 autentificări / 15 minute și
+  5 conturi noi / oră
+- limitare de rată per cont: 20 de autentificări / oră pe aceeași adresă,
+  oricâte adrese IP ar folosi cine încearcă; socoteala se șterge la prima
+  autentificare reușită
 - parolele conturilor: minimum 10 caractere, stocate cu scrypt
 - la autentificare greșită, același mesaj **și același timp de răspuns**,
   indiferent dacă adresa are cont sau nu

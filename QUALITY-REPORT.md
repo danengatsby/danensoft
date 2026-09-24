@@ -54,6 +54,26 @@ politica de conținut blochează ceva. Nu blochează: 0 erori de consolă.
 Prima problemă era exploatabilă din exterior, fără cont. Restul cereau fie acces
 de administrator, fie condiții mai înguste.
 
+## Lipsuri operaționale acoperite (15 august 2026)
+
+1. **Control de versiune.** Proiectul rula în producție fără git: nicio
+   modificare nu avea istoric și nimic nu se putea anula. Depozit inițializat,
+   cu starea curentă drept prim commit. Nu există copie la distanță.
+2. **Copii de siguranță.** Baza cu cererile clienților nu avea niciuna.
+   `danen-backup.timer` face zilnic o copie verificată în `/var/backups/danen`,
+   cu păstrarea ultimelor 14. Testate: scrierea prin `VACUUM INTO` cu serviciul
+   pornit, verificarea de integritate și rotația (cu limita coborâtă temporar,
+   au rămas exact cele mai noi copii). Copiile stau pe același disc ca baza.
+3. **Ghicirea parolelor pe un singur cont.** Limitarea era doar per IP, deci un
+   atac împărțit pe mai multe adrese nu întâlnea nicio piedică. S-a adăugat o
+   limitare per cont: 20 de încercări pe oră, indiferent de IP. Verificat cu 22
+   de încercări de la 22 de adrese diferite — blocate de la a 21-a. Socoteala se
+   șterge la prima autentificare reușită, verificat separat, ca un utilizator
+   care greșește de câteva ori și apoi nimerește parola să nu rămână blocat.
+
+   Limita e largă intenționat: orice prag mic pe cont devine o armă, fiindcă
+   oricine poate bloca un cont străin greșind parola în locul lui.
+
 ## Verificare în browser
 
 `npm run qa` (`scripts/qa.mjs`) pornește Chromium prin Playwright pe build-ul

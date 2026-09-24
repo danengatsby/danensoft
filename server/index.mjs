@@ -32,6 +32,18 @@ const loginLimit = createRateLimiter({ max: 8, windowMs: 15 * 60_000 })
 const signupLimit = createRateLimiter({ max: 5, windowMs: 60 * 60_000 })
 
 /**
+ * A doua limitare la autentificare, pe adresa contului vizat. Cea pe IP nu
+ * oprește un atac împărțit pe multe adrese, care ar încerca oricâte parole pe
+ * același cont.
+ *
+ * Limita e largă intenționat: un prag mic ar deveni o armă, fiindcă oricine
+ * poate bloca un cont străin greșind parola în locul lui. 20 pe oră lasă loc
+ * greșelilor omenești, dar face inutilă ghicirea, iar socoteala se șterge la
+ * prima autentificare reușită.
+ */
+const accountLoginLimit = createRateLimiter({ max: 20, windowMs: 60 * 60_000 })
+
+/**
  * Adresa clientului, pentru limitarea de rată.
  *
  * `X-Forwarded-For` NU este de încredere: nginx adaugă adresa reală la finalul
@@ -309,8 +321,15 @@ const server = createServer(async (req, res) => {
         }
 
         const body = new URLSearchParams(await readBody(req))
-        const account = users.byEmail(clean(body.get('email'), 200))
+        const email = clean(body.get('email'), 200).toLowerCase()
+        const account = users.byEmail(email)
         const password = String(body.get('password') ?? '')
+
+        // Aceeași limitare se aplică și adreselor fără cont: altfel, diferența
+        // dintre „limitat” și „nelimitat” ar spune care adrese sunt conturi.
+        if (!accountLoginLimit(email)) {
+          return html(res, 429, accountLoginPage({ error: 'Prea multe încercări. Așteptați o oră.' }))
+        }
 
         // Mesaj identic pentru cont inexistent și parolă greșită — și același
         // timp de răspuns, prin verificarea contra hash-ului momeală.
@@ -318,6 +337,8 @@ const server = createServer(async (req, res) => {
         if (!ok) {
           return html(res, 401, accountLoginPage({ error: 'E-mail sau parolă greșită.' }))
         }
+
+        accountLoginLimit.reset(email)
 
         // Doar căi interne, ca să nu putem fi folosiți ca redirector spre alt
         // site. `//gazda` trece de regexul de cale, dar browserul îl citește ca

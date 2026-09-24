@@ -12,6 +12,7 @@
     "test": "vitest run",
     "qa": "node scripts/qa.mjs",
     "csp:hash": "node scripts/csp-hash.mjs",
+    "backup": "node scripts/backup.mjs",
     "server": "node server/index.mjs",
     "admin:set": "node scripts/set-admin.mjs",
     "mail:test": "node --env-file=/etc/danen/api.env scripts/test-mail.mjs"

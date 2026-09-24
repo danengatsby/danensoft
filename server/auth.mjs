@@ -44,13 +44,17 @@ export function newSessionToken() {
 }
 
 /**
- * Limitator simplu de rată, în memorie. Cheia este de obicei adresa IP.
+ * Limitator simplu de rată, în memorie. Cheia este adresa IP sau, la
+ * autentificare, adresa de e-mail a contului vizat.
  * Suficient pentru un site de prezentare; nu supraviețuiește repornirii.
+ *
+ * `check` întoarce false când s-a atins limita. `reset` șterge socoteala unei
+ * chei — se apelează după o autentificare reușită.
  */
 export function createRateLimiter({ max, windowMs }) {
   const hits = new Map()
 
-  return function check(key) {
+  function check(key) {
     const now = Date.now()
     const recent = (hits.get(key) ?? []).filter((time) => now - time < windowMs)
 
@@ -71,4 +75,7 @@ export function createRateLimiter({ max, windowMs }) {
 
     return true
   }
+
+  check.reset = (key) => hits.delete(key)
+  return check
 }
