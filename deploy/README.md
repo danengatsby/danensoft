@@ -15,6 +15,7 @@ zero — nu ca sursă de adevăr.
 | `danen-api.service` | `/etc/systemd/system/danen-api.service` |
 | `danen-backup.service` | `/etc/systemd/system/danen-backup.service` |
 | `danen-backup.timer` | `/etc/systemd/system/danen-backup.timer` |
+| `nginx-snippet-private-headers.conf` | `/etc/nginx/snippets/danen-private-headers.conf` (conturi, fără Referer) |
 | `nginx-snippet-headers.conf` | `/etc/nginx/snippets/danen-headers.conf` |
 | `nginx-snippet-csp.conf` | `/etc/nginx/snippets/danen-csp.conf` |
 | `nginx.conf.example` | model pentru `/etc/nginx/sites-available/…` |
@@ -47,6 +48,7 @@ systemctl restart danen-api
 # nginx
 cp deploy/nginx-snippet-headers.conf /etc/nginx/snippets/danen-headers.conf
 cp deploy/nginx-snippet-csp.conf     /etc/nginx/snippets/danen-csp.conf
+cp deploy/nginx-snippet-private-headers.conf /etc/nginx/snippets/danen-private-headers.conf
 nginx -t && systemctl reload nginx
 ```
 

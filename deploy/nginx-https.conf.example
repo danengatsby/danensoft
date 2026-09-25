@@ -47,7 +47,8 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
 
-        include snippets/danen-headers.conf;
+        proxy_hide_header Referrer-Policy;
+        include snippets/danen-private-headers.conf;
     }
 
     location /cont/ {
@@ -58,7 +59,8 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
 
-        include snippets/danen-headers.conf;
+        proxy_hide_header Referrer-Policy;
+        include snippets/danen-private-headers.conf;
     }
 
     # Administrare, export CSV și acțiuni asupra mesajelor, ca în configurația activă.

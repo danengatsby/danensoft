@@ -190,6 +190,8 @@ function validate(payload) {
 }
 
 const server = createServer(async (req, res) => {
+  // ServerResponse already suppresses the body for an original HEAD request.
+  if (req.method === 'HEAD') req.method = 'GET'
   try {
     let url
     try {

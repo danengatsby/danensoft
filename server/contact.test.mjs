@@ -339,3 +339,13 @@ it('recovery rate limiting does not enumerate accounts or replace a valid token'
   expect((await api('/cont/recuperare', { method:'POST', body:new URLSearchParams({ email }) })).status).toBe(200)
   expect(queuedLink(email, 'reset').href).toBe(before)
 })
+
+it('HEAD has the same account and health status/headers as GET without a body', async () => {
+  for (const path of ['/cont/autentificare?lang=en','/api/health']) {
+    const get = await api(path)
+    const head = await api(path,{method:'HEAD'})
+    expect(head.status).toBe(get.status)
+    expect(head.headers.get('content-type')).toBe(get.headers.get('content-type'))
+    expect(await head.text()).toBe('')
+  }
+})
