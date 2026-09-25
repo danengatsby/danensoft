@@ -31,3 +31,6 @@ qa-screens/
 *.pem
 *.key
 *.bundle
+
+api-current
+*.enc

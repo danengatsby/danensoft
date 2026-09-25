@@ -3,18 +3,20 @@ Description=Moldovan Lux - API contact si administrare mesaje
 After=network.target
 
 [Service]
+UMask=0077
 Type=simple
 User=danen
 Group=danen
-WorkingDirectory=/var/www/danen
+WorkingDirectory=/var/www/danensoft/api-current
 EnvironmentFile=/etc/danen/api.env
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=8091
 Environment=DANEN_DB=/var/lib/danen/messages.db
-ExecStart=/usr/bin/node --no-warnings /var/www/danen/server/index.mjs
+ExecStart=/usr/local/bin/node --no-warnings /var/www/danensoft/api-current/start.mjs
 Restart=on-failure
 RestartSec=3
+TimeoutStopSec=50
 
 # Restrictii de securitate
 NoNewPrivileges=yes

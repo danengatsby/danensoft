@@ -1,21 +1,17 @@
+import { readFile } from 'node:fs/promises'
+import { accountRoutes } from './account-routes.mjs'
 import { createServer } from 'node:http'
-import { mailQueue, messages, sessions, users, STATUSES } from './db.mjs'
+import { db, accountMailQueue, mailQueue, messages, sessions, users, STATUSES } from './db.mjs'
 import {
   createRateLimiter,
-  hashPassword,
   newSessionToken,
-  verifyNothing,
-  verifyPassword,
 } from './auth.mjs'
 import { contactEmailJobs, mailConfigured, sendMail } from './mail.mjs'
 import { createMailWorker } from './mail-worker.mjs'
 import {
   CSP,
-  accountLoginPage,
-  accountPage,
   csv,
   messagesPage,
-  registerPage,
 } from './pages.mjs'
 
 const PORT = Number(process.env.PORT ?? 8091)
@@ -23,6 +19,7 @@ const HOST = process.env.HOST ?? '127.0.0.1'
 /** Setați DANEN_HTTPS=1 după activarea TLS: cookie-ul primește atunci și flagul Secure. */
 const HTTPS = process.env.DANEN_HTTPS === '1'
 const USER_COOKIE = 'danen_user'
+const accountMailWorker = createMailWorker({ queue: accountMailQueue, sendMail, isConfigured: () => mailConfigured })
 const mailWorker = createMailWorker({ queue: mailQueue, sendMail, isConfigured: () => mailConfigured })
 
 if (users.adminCount() === 0) {
@@ -30,20 +27,6 @@ if (users.adminCount() === 0) {
 }
 
 const contactLimit = createRateLimiter({ max: 5, windowMs: 10 * 60_000 })
-const loginLimit = createRateLimiter({ max: 8, windowMs: 15 * 60_000 })
-const signupLimit = createRateLimiter({ max: 5, windowMs: 60 * 60_000 })
-
-/**
- * A doua limitare la autentificare, pe adresa contului vizat. Cea pe IP nu
- * oprește un atac împărțit pe multe adrese, care ar încerca oricâte parole pe
- * același cont.
- *
- * Limita e largă intenționat: un prag mic ar deveni o armă, fiindcă oricine
- * poate bloca un cont străin greșind parola în locul lui. 20 pe oră lasă loc
- * greșelilor omenești, dar face inutilă ghicirea, iar socoteala se șterge la
- * prima autentificare reușită.
- */
-const accountLoginLimit = createRateLimiter({ max: 20, windowMs: 60 * 60_000 })
 
 /**
  * Adresa clientului, pentru limitarea de rată.
@@ -140,7 +123,8 @@ const userCookie = (token, maxAge) => cookieFor(USER_COOKIE, token, maxAge, '/')
 function currentUser(req) {
   const session = sessions.get(cookies(req)[USER_COOKIE])
   if (session?.kind !== 'user' || !session.user_id) return null
-  return users.byId(session.user_id) ?? null
+  const user = users.byId(session.user_id)
+  return user?.email_verified_at ? user : null
 }
 
 /** Administrarea e o permisiune a contului, nu o autentificare separată. */
@@ -170,7 +154,7 @@ function sameOrigin(req) {
   const origin = req.headers.origin
   if (origin) {
     try {
-      return new URL(origin).host === req.headers.host
+      return new URL(origin).origin === (HTTPS ? 'https://' : 'http://') + req.headers.host
     } catch {
       return false
     }
@@ -215,6 +199,12 @@ const server = createServer(async (req, res) => {
     }
     const path = url.pathname
     const ip = clientIp(req)
+
+    if (path === '/api/health' && req.method === 'GET') {
+      db.prepare('SELECT 1').get()
+      return send(res, 200, JSON.stringify({ status:'ok', release:process.env.DANEN_RELEASE_ID ?? 'working-tree' }), {
+        'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store' })
+    }
 
     // ── API public ───────────────────────────────────────────────────────────
     if (path === '/api/contact' && req.method === 'POST') {
@@ -267,6 +257,7 @@ const server = createServer(async (req, res) => {
 
     // ── Administrare (necesită un cont cu rol de administrator) ──────────────
     if (path === '/admin/logout' && req.method === 'POST') {
+      if (!sameOrigin(req)) return send(res, 403, 'Origine respinsă.')
       sessions.destroy(cookies(req)[USER_COOKIE])
       return redirect(res, '/', { 'Set-Cookie': userCookie('', 0) })
     }
@@ -280,6 +271,12 @@ const server = createServer(async (req, res) => {
         return redirect(res, '/cont/autentificare?catre=/admin')
       }
 
+      if (path === '/admin/health' && req.method === 'GET') {
+        try {
+          const report = JSON.parse(await readFile('/var/lib/danen-monitor/status.json', 'utf8'))
+          return send(res, 200, JSON.stringify(report), { 'Content-Type':'application/json', 'Cache-Control':'no-store' })
+        } catch { return json(res, 503, { status:'unknown' }) }
+      }
       if (path === '/admin' && req.method === 'GET') {
         return html(res, 200, messagesPage(messages.list(), { insecure: !HTTPS, mailConfigured }), {
           'Cache-Control': 'no-store',
@@ -313,149 +310,8 @@ const server = createServer(async (req, res) => {
       }
     }
 
-    // ── Conturi de client ────────────────────────────────────────────────────
-    if (path === '/cont/inregistrare') {
-      if (req.method === 'GET') return html(res, 200, registerPage())
-
-      if (req.method === 'POST') {
-        if (!sameOrigin(req)) return send(res, 403, 'Origine respinsă.')
-        if (!signupLimit(ip)) {
-          return html(res, 429, registerPage({ error: 'Prea multe conturi create de aici. Reveniți peste o oră.' }))
-        }
-
-        const body = new URLSearchParams(await readBody(req))
-        const values = {
-          name: clean(body.get('name'), 120),
-          email: clean(body.get('email'), 200).toLowerCase(),
-        }
-        const password = String(body.get('password') ?? '')
-
-        if (values.name.length < 2) {
-          return html(res, 422, registerPage({ error: 'Introduceți numele.', values }))
-        }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(values.email)) {
-          return html(res, 422, registerPage({ error: 'Adresă de e-mail invalidă.', values }))
-        }
-        if (password.length < 10) {
-          return html(res, 422, registerPage({ error: 'Parola trebuie să aibă cel puțin 10 caractere.', values }))
-        }
-        if (users.byEmail(values.email)) {
-          return html(res, 409, registerPage({ error: 'Există deja un cont cu această adresă.', values }))
-        }
-
-        users.create(values.email, values.name, hashPassword(password), 'user')
-        return startSession(res, users.byEmail(values.email))
-      }
-    }
-
-    if (path === '/cont/autentificare') {
-      if (req.method === 'GET') {
-        return html(res, 200, accountLoginPage({ next: url.searchParams.get('catre') }))
-      }
-
-      if (req.method === 'POST') {
-        if (!sameOrigin(req)) return send(res, 403, 'Origine respinsă.')
-        if (!loginLimit(ip)) {
-          return html(res, 429, accountLoginPage({ error: 'Prea multe încercări. Așteptați 15 minute.' }))
-        }
-
-        const body = new URLSearchParams(await readBody(req))
-        const email = clean(body.get('email'), 200).toLowerCase()
-        const account = users.byEmail(email)
-        const password = String(body.get('password') ?? '')
-
-        // Aceeași limitare se aplică și adreselor fără cont: altfel, diferența
-        // dintre „limitat” și „nelimitat” ar spune care adrese sunt conturi.
-        if (!accountLoginLimit(email)) {
-          return html(res, 429, accountLoginPage({ error: 'Prea multe încercări. Așteptați o oră.' }))
-        }
-
-        // Mesaj identic pentru cont inexistent și parolă greșită — și același
-        // timp de răspuns, prin verificarea contra hash-ului momeală.
-        const ok = account ? verifyPassword(password, account.password_hash) : verifyNothing(password)
-        if (!ok) {
-          return html(res, 401, accountLoginPage({ error: 'E-mail sau parolă greșită.' }))
-        }
-
-        accountLoginLimit.reset(email)
-
-        // Doar căi interne, ca să nu putem fi folosiți ca redirector spre alt
-        // site. `//gazda` trece de regexul de cale, dar browserul îl citește ca
-        // adresă absolută fără schemă, deci se respinge explicit.
-        const requested = body.get('catre')
-        const internal =
-          typeof requested === 'string' &&
-          !requested.startsWith('//') &&
-          /^\/[a-z/-]*$/.test(requested)
-        const next = internal ? requested : null
-        return startSession(res, account, next)
-      }
-    }
-
-    if (path === '/cont/iesire' && req.method === 'POST') {
-      sessions.destroy(cookies(req)[USER_COOKIE])
-      return redirect(res, '/', { 'Set-Cookie': userCookie('', 0) })
-    }
-
-    if (path === '/cont' && req.method === 'GET') {
-      const user = currentUser(req)
-      if (!user) return redirect(res, '/cont/autentificare')
-      return html(
-        res,
-        200,
-        accountPage(user, messages.listForUser(user.id), {
-          notice: url.searchParams.get('ok') ? 'Datele au fost salvate.' : null,
-          error: url.searchParams.get('eroare'),
-        }),
-        { 'Cache-Control': 'no-store' },
-      )
-    }
-
-    // Modificarea propriilor date. Acționează întotdeauna asupra contului din
-    // sesiune, niciodată asupra unui id primit din formular.
-    if (path === '/cont/date' && req.method === 'POST') {
-      const user = currentUser(req)
-      if (!user) return redirect(res, '/cont/autentificare')
-      if (!sameOrigin(req)) return send(res, 403, 'Origine respinsă.')
-
-      const name = clean(new URLSearchParams(await readBody(req)).get('name'), 120)
-      if (name.length < 2) {
-        return redirect(res, '/cont?eroare=' + encodeURIComponent('Numele este prea scurt.'))
-      }
-
-      const account = users.byEmail(user.email)
-      users.update(user.id, { passwordHash: account.password_hash, name, role: account.role })
-      return redirect(res, '/cont?ok=1')
-    }
-
-    if (path === '/cont/parola' && req.method === 'POST') {
-      const user = currentUser(req)
-      if (!user) return redirect(res, '/cont/autentificare')
-      if (!sameOrigin(req)) return send(res, 403, 'Origine respinsă.')
-      if (!loginLimit(ip)) {
-        return redirect(res, '/cont?eroare=' + encodeURIComponent('Prea multe încercări.'))
-      }
-
-      const body = new URLSearchParams(await readBody(req))
-      const account = users.byEmail(user.email)
-
-      if (!verifyPassword(String(body.get('current') ?? ''), account.password_hash)) {
-        return redirect(res, '/cont?eroare=' + encodeURIComponent('Parola actuală este greșită.'))
-      }
-
-      const next = String(body.get('next') ?? '')
-      if (next.length < 10) {
-        return redirect(res, '/cont?eroare=' + encodeURIComponent('Parola nouă trebuie să aibă cel puțin 10 caractere.'))
-      }
-
-      users.update(user.id, { passwordHash: hashPassword(next), name: account.name, role: account.role })
-
-      // Parola schimbată trebuie să dea afară orice altă sesiune: altfel, cine
-      // schimbă parola după o compromitere lasă atacatorul autentificat până la
-      // 30 de zile. Browserul curent primește imediat o sesiune nouă.
-      sessions.destroyForUser(user.id)
-      return startSession(res, account, '/cont?ok=1')
-    }
+    if (await accountRoutes(req, res, { url, ip, readBody, sameOrigin, html, redirect, send,
+      startSession, currentUser, userCookie, cookies, messages, wake: () => accountMailWorker.wake() })) return
 
     return send(res, 404, 'Nu există.')
   } catch (error) {
@@ -472,6 +328,7 @@ const server = createServer(async (req, res) => {
 
 server.listen(PORT, HOST, () => {
   mailWorker.start()
+  accountMailWorker.start()
   console.log(`[danen-api] ascult pe http://${HOST}:${PORT} · TLS declarat: ${HTTPS}`)
 })
 
@@ -481,7 +338,7 @@ for (const signal of ['SIGINT', 'SIGTERM']) {
     const deadline = setTimeout(() => process.exit(1), 45_000)
     deadline.unref()
     try {
-      await Promise.all([new Promise((resolve) => server.close(resolve)), mailWorker.stop()])
+      await Promise.all([new Promise((resolve) => server.close(resolve)), mailWorker.stop(), accountMailWorker.stop()])
       process.exit(0)
     } catch { process.exit(1) }
   })

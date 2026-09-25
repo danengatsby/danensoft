@@ -24,7 +24,7 @@ describe('Language selection', () => {
     const user = userEvent.setup()
     const first = renderPage()
     await user.click(screen.getByRole('link', { name: 'English' }))
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Software built foryour business.')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Web applications and integrationsfor your business.')
     expect(document.documentElement.lang).toBe('en')
     expect(document.title).toBe('Software development for business · Dan Enache')
     expect(screen.getByRole('link', { name: 'English' })).toHaveAttribute('href', '/en/')

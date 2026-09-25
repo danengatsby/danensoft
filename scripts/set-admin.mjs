@@ -10,7 +10,7 @@
 import { randomBytes } from 'node:crypto'
 import { stdin, stdout } from 'node:process'
 import { hashPassword } from '../server/auth.mjs'
-import { sessions, users } from '../server/db.mjs'
+import { db, sessions, users } from '../server/db.mjs'
 
 const ENTER = ['\r', '\n']
 const CTRL_C = '\u0003'
@@ -101,6 +101,8 @@ if (existing) {
   users.create(email, 'Administrator', hash, 'admin')
   console.log(`Cont creat: ${email}, cu rol de administrator.`)
 }
+
+db.prepare('UPDATE users SET email_verified_at = ? WHERE email = ?').run(new Date().toISOString(), email)
 
 if (wantsRandom) console.log(`\n  Parolă generată: ${password}\n`)
 console.log('Autentificare la /cont/autentificare')

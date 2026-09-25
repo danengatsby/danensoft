@@ -55,6 +55,10 @@ if (!columns('users').includes('role')) {
   db.exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'")
 }
 
+if (!columns('users').includes('email_verified_at')) {
+  db.exec('ALTER TABLE users ADD COLUMN email_verified_at TEXT')
+}
+
 // Sesiunile au acum două feluri (admin / cont de client); tabelul vechi se reface.
 if (columns('sessions').length && !columns('sessions').includes('kind')) {
   db.exec('DROP TABLE sessions')
@@ -75,6 +79,7 @@ db.exec('CREATE INDEX IF NOT EXISTS idx_messages_user ON messages (user_id)')
 
 export const STATUSES = ['primit', 'în lucru', 'ofertat', 'închis']
 export const mailQueue = createMailQueue(db)
+export const accountMailQueue = createMailQueue(db, { account: true })
 
 const q = {
   insertMessage: db.prepare(`
@@ -101,7 +106,7 @@ const q = {
   ),
   countAdmins: db.prepare("SELECT COUNT(*) AS n FROM users WHERE role = 'admin'"),
   userByEmail: db.prepare('SELECT * FROM users WHERE email = ? COLLATE NOCASE'),
-  userById: db.prepare('SELECT id, email, name, role, created_at FROM users WHERE id = ?'),
+  userById: db.prepare('SELECT id, email, name, role, created_at, email_verified_at FROM users WHERE id = ?'),
   insertSession: db.prepare(
     'INSERT INTO sessions (token, kind, user_id, created_at, expires_at) VALUES (?, ?, ?, ?, ?)',
   ),

@@ -122,13 +122,22 @@ it.each(['danen_user=%', 'danen_user=%E0%A4%A', 'unrelated=%'])('tratează cooki
   expect(response.headers.get('location')).toBe('/cont/autentificare')
 })
 
+const testPassword = 'Test-password-12345'
+function queuedLink(email, kind) {
+  const row = db.prepare('SELECT j.payload FROM account_mail_jobs j JOIN users u ON u.id = j.message_id WHERE u.email = ? AND j.kind = ?').get(email, kind)
+  return new URL(JSON.parse(row.payload).text.match(/https:\/\/\S+/)[0])
+}
 async function register(email) {
   const response = await api('/cont/inregistrare', {
-    method: 'POST',
-    body: new URLSearchParams({ name: 'Test', email, password: 'Test-password-12345' }),
+    method: 'POST', body: new URLSearchParams({ name:'Test', email, password:testPassword }),
   })
-  expect(response.status).toBe(302)
-  return response.headers.get('set-cookie').split(';')[0]
+  expect(response.status).toBe(200)
+  expect(response.headers.get('set-cookie')).toBeNull()
+  const token = queuedLink(email, 'verify').searchParams.get('token')
+  expect((await api('/cont/confirmare', { method:'POST', body:new URLSearchParams({ token, password:testPassword }) })).status).toBe(200)
+  const login = await api('/cont/autentificare', { method:'POST', body:new URLSearchParams({ email, password:testPassword }) })
+  expect(login.status).toBe(302)
+  return login.headers.get('set-cookie').split(';')[0]
 }
 
 it('păstrează autentificarea când un alt cookie este codificat incorect', async () => {
@@ -250,4 +259,83 @@ it('protejează reluarea notificărilor prin rol și origine, fără a repeta no
     expect(deleted.status).toBe(302)
     expect(db.prepare('SELECT COUNT(*) AS n FROM mail_jobs WHERE message_id = ?').get(message.id).n).toBe(0)
   } finally { writer.close() }
+})
+
+it('verification and recovery require unexpired, single-use tokens; recovery invalidates sessions', async () => {
+  const email = 'recovery@example.invalid'
+  const password = 'Another-test-password-12345'
+  const signup = await api('/cont/inregistrare?lang=en', { method:'POST', body:new URLSearchParams({ name:'Recovery', email, password:testPassword }) })
+  expect(signup.status).toBe(200)
+  expect(await signup.text()).toContain('Check your email')
+  const login = () => api('/cont/autentificare', { method:'POST', body:new URLSearchParams({ email, password:testPassword }) })
+  expect((await login()).status).toBe(403)
+  const link = queuedLink(email, 'verify')
+  expect(link.origin).toBe('https://danenachesoft.space')
+  expect(link.searchParams.get('lang')).toBe('en')
+  const token = link.searchParams.get('token')
+  expect(db.prepare('SELECT hash FROM account_tokens WHERE user_id = (SELECT id FROM users WHERE email = ?)').get(email).hash).not.toBe(token)
+  expect((await api(link.pathname + link.search)).status).toBe(200)
+  expect((await login()).status).toBe(403) // GET does not consume or verify.
+  expect((await api('/cont/confirmare', { method:'POST', body:new URLSearchParams({ token, password:'wrong' }) })).status).toBe(401)
+  expect((await api('/cont/confirmare', { method:'POST', body:new URLSearchParams({ token, password:testPassword }) })).status).toBe(200)
+  expect((await api('/cont/confirmare', { method:'POST', body:new URLSearchParams({ token, password:testPassword }) })).status).toBe(400)
+  const signed = await login()
+  const cookie = signed.headers.get('set-cookie').split(';')[0]
+  const recover = await api('/cont/recuperare?lang=en', { method:'POST', body:new URLSearchParams({ email }), headers:{ Host:'attacker.invalid' } })
+  const absent = await api('/cont/recuperare?lang=en', { method:'POST', body:new URLSearchParams({ email:'absent@example.invalid' }) })
+  expect(await recover.text()).toBe(await absent.text())
+  const reset = queuedLink(email, 'reset')
+  expect(reset.origin).toBe('https://danenachesoft.space')
+  const resetToken = reset.searchParams.get('token')
+  expect((await api('/cont/resetare?token=' + resetToken)).status).toBe(200)
+  expect((await api('/cont', { headers:{ Cookie:cookie } })).status).toBe(200)
+  const resetPost = (overrides = {}, headers = {}) => api('/cont/resetare', { method:'POST', headers, body:new URLSearchParams({ token:resetToken, password, confirm:password, ...overrides }) })
+  expect((await resetPost({}, { Origin:'https://foreign.invalid' })).status).toBe(403)
+  expect((await resetPost({ confirm:'different' })).status).toBe(422)
+  expect((await resetPost()).status).toBe(200)
+  expect((await resetPost()).status).toBe(400)
+  expect((await api('/cont', { headers:{ Cookie:cookie } })).status).toBe(302)
+  expect((await login()).status).toBe(401)
+  expect((await api('/cont/autentificare?lang=en', { method:'POST', body:new URLSearchParams({ email, password }) })).headers.get('location')).toBe('/cont?lang=en')
+})
+
+it('expired token is rejected and a second request invalidates the first token', async () => {
+  const email = 'expiry@example.invalid'
+  await register(email)
+  const requestReset = () => api('/cont/recuperare', { method:'POST', body:new URLSearchParams({ email }) })
+  await requestReset()
+  const first = queuedLink(email, 'reset').searchParams.get('token')
+  await requestReset()
+  const second = queuedLink(email, 'reset').searchParams.get('token')
+  expect(first).not.toBe(second)
+  expect((await api('/cont/resetare?token=' + first)).status).toBe(400)
+  const writer = new DatabaseSync(join(directory, 'messages.db'))
+  try { writer.prepare('UPDATE account_tokens SET expires_at = ? WHERE user_id = (SELECT id FROM users WHERE email = ?)').run('2000-01-01T00:00:00.000Z', email) }
+  finally { writer.close() }
+  expect((await api('/cont/resetare?token=' + second)).status).toBe(400)
+})
+
+it.each(['/cont/iesire', '/admin/logout'])('rejects cross-origin logout %s', async path => {
+  expect((await api(path, { method:'POST', headers:{ Origin:'https://foreign.invalid' } })).status).toBe(403)
+})
+
+it('health returns no secrets; account pages are private and translated', async () => {
+  const health = await api('/api/health')
+  expect(await health.json()).toEqual({ status:'ok', release:'working-tree' })
+  for (const path of ['/cont/autentificare', '/cont/inregistrare', '/cont/recuperare', '/cont/retrimite']) {
+    const response = await api(path + '?lang=en')
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('no-store')
+    expect(response.headers.get('referrer-policy')).toBe('no-referrer')
+    expect(await response.text()).toContain('<html lang="en">')
+  }
+})
+
+it('recovery rate limiting does not enumerate accounts or replace a valid token', async () => {
+  const email = 'limited@example.invalid'
+  await register(email)
+  for (let i = 0; i < 2; i++) expect((await api('/cont/recuperare', { method:'POST', body:new URLSearchParams({ email }) })).status).toBe(200)
+  const before = queuedLink(email, 'reset').href
+  expect((await api('/cont/recuperare', { method:'POST', body:new URLSearchParams({ email }) })).status).toBe(200)
+  expect(queuedLink(email, 'reset').href).toBe(before)
 })

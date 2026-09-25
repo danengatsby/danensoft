@@ -50,7 +50,7 @@ describe.each(ROUTES)('structura paginii %s', (path) => {
       .filter((href) => !href.startsWith('//'))
 
     for (const href of internal) {
-      const [pathname] = href.split('#')
+      const pathname = new URL(href, 'https://example.test').pathname
       expect(KNOWN_PATHS.has(normalizePath(pathname))).toBe(true)
     }
   })

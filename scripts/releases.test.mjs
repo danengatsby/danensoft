@@ -72,3 +72,23 @@ it('refuză identificatori care ies din directorul releases', async () => {
   await expect(stage('../escape')).rejects.toThrow('invalid')
   await expect(activate('../escape')).rejects.toThrow('invalid')
 })
+
+it('coordinates API activation with frontend rollback when startup fails', async () => {
+  await stage('v1'); await activate('v1'); await stage('v2')
+  let activeAPI = 'v1'
+  const runtime = {
+    validate: async () => {},
+    activate: async id => { activeAPI = id; throw new Error('API failed') },
+    restore: async id => { activeAPI = id },
+  }
+  await expect(activateRelease({ root, id:'v2', csp, verify:async () => {}, runtime })).rejects.toThrow('restaurată')
+  expect(await pointer(root,'current')).toBe('v1')
+  expect(activeAPI).toBe('v1')
+})
+it('validates the API before exposing frontend changes', async () => {
+  await stage('v1'); await activate('v1'); await stage('v2')
+  await expect(activateRelease({ root, id:'v2', csp, verify:async () => {}, runtime:{
+    validate:async () => { throw new Error('Corrupt runtime') },
+  } })).rejects.toThrow('Corrupt runtime')
+  expect(await pointer(root,'current')).toBe('v1')
+})

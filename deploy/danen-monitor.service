@@ -1,0 +1,20 @@
+[Unit]
+Description=Danensoft HTTPS, certificate, backup and email monitor
+After=network-online.target danen-api.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+Group=danen
+UMask=0027
+WorkingDirectory=/var/www/danensoft
+EnvironmentFile=/etc/danen/api.env
+ExecStart=/usr/local/bin/node /var/www/danensoft/scripts/monitor.mjs
+TimeoutStartSec=90
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/danen-monitor
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6

@@ -107,7 +107,7 @@ export async function stageRelease({ root, source, id, csp }) {
   }
 }
 
-export async function activateRelease({ root, id, csp, verify }) {
+export async function activateRelease({ root, id, csp, verify, runtime }) {
   if (!validId(id)) throw new Error('Identificator release invalid')
   const release = join(root, 'releases', id)
   const manifest = JSON.parse(await readFile(join(release, 'manifest.json'), 'utf8'))
@@ -116,14 +116,17 @@ export async function activateRelease({ root, id, csp, verify }) {
   for (const [file, digest] of Object.entries(actual.hashes).filter(([file]) => file.startsWith('assets/'))) {
     if (hash(await readFile(join(root, 'shared-assets', file.slice(7)))) !== digest) throw new Error(`Resursă partajată deteriorată: ${file}`)
   }
+  if (runtime) await runtime.validate(id)
   const old = await pointer(root, 'current')
   if (old === id) throw new Error('Versiunea este deja activă')
   await switchTo(root, 'current', id)
   try {
+    if (runtime) await runtime.activate(id)
     await verify(id, actual.routes)
   } catch (error) {
     if (old) await switchTo(root, 'current', old)
     else await rm(join(root, 'current'))
+    if (runtime) await runtime.restore(old)
     throw new Error(`Verificarea a eșuat; versiunea anterioară a fost restaurată: ${error.message}`)
   }
   if (old) await switchTo(root, 'previous', old)

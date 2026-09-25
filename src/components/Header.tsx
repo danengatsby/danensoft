@@ -10,7 +10,7 @@ import { ArrowUpRight } from './Icons'
 const [firstWord, ...restWords] = company.name.split(' ')
 
 export default function Header() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const [open, setOpen] = useState(false)
   const navId = useId()
   const toggleRef = useRef<HTMLButtonElement>(null)
@@ -86,7 +86,7 @@ export default function Header() {
             ))}
           </ul>
           {/* Zonă de cont: servită de serviciul Node, deci navigare completă. */}
-          <a href="/cont" className="nav__link nav__link--account">{t("Cont")}</a>
+          <a href={language === 'en' ? '/cont?lang=en' : '/cont'} className="nav__link nav__link--account">{t("Cont")}</a>
           <Link to="/contact" className="btn btn--dark">{t("Discutăm proiectul ")}<ArrowUpRight />
           </Link>
         </nav>

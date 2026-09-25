@@ -1,3 +1,5 @@
+Procedura curentă completă: [operations.md](operations.md).
+
 # Configurația de sistem
 
 Fișierele de aici sunt **copii** ale configurației care rulează pe server și un
@@ -20,8 +22,7 @@ zero — nu ca sursă de adevăr.
 Ce **nu** este aici, intenționat:
 
 - `/etc/danen/api.env` — conține secrete (parola SMTP). Rămâne doar pe server.
-- `/etc/nginx/sites-available/danenachesoft` — are căi de certificate scrise de
-  certbot, specifice mașinii. `nginx.conf.example` acoperă partea care contează.
+- Cheile TLS și cheia de criptare a backupurilor rămân în /etc. Modelul TLS activ, fără chei, este nginx-https.conf.example.
 
 Modelul trimite `/api/`, `/cont` (potrivire exactă), `/cont/` și `/admin…` către
 serviciul Node de pe `127.0.0.1:8091`. `/contact` rămâne o pagină statică.
@@ -61,10 +62,10 @@ Hash-ul din `nginx-snippet-csp.conf` depinde de scriptul inline din
 
 ## Publicare în versiuni
 
-Configurația nginx folosește `root /var/www/danen/current` și
-`alias /var/www/danen/shared-assets/` în blocul `/assets/`.
+Configurația nginx folosește `root /var/www/danensoft/current` și
+`alias /var/www/danensoft/shared-assets/` în blocul `/assets/`.
 `npm run build` scrie numai în `.build/dist/`; `npm run deploy` pregătește
-un director nou în `releases/` și comută linkul `current` prin rename atomic.
+un director nou în `releases/` cu site și runtime, comută `current` și `api-current`, apoi repornește API-ul și verifică identificatorii ambelor componente.
 `npm run rollback` folosește `previous`. Verificările sunt executate după
 comutare; la eșec se restaurează ținta anterioară.
 
@@ -85,5 +86,4 @@ systemctl enable --now danen-backup-offsite.timer
 ```
 
 GitHub păstrează codul în `danengatsby/danensoft`; mesajele și conturile nu
-se includ în depozit. Configurația SMTP, cheia SSH și cheia certificatului
-necesită o strategie separată de păstrare a secretelor pentru refacerea serverului.
+se includ în depozit. Configurația SMTP intră în arhiva criptată externă. Cheia de criptare și accesul SSH trebuie păstrate separat într-un seif pentru recuperare.

@@ -20,7 +20,7 @@ const STYLE = `
   * { box-sizing:border-box; margin:0 }
   body { background:var(--paper); color:var(--ink); font:15px/1.6 ui-sans-serif,system-ui,sans-serif;
     padding:2rem 1.25rem 4rem }
-  .wrap { max-width:70rem; margin-inline:auto }
+  .wrap { overflow-wrap:anywhere; max-width:70rem; margin-inline:auto }
   header { display:flex; flex-wrap:wrap; gap:1rem; justify-content:space-between;
     align-items:center; padding-bottom:1rem; border-bottom:1px solid var(--rule); margin-bottom:2rem }
   h1 { font-size:1.4rem; letter-spacing:-.03em }
@@ -36,6 +36,7 @@ const STYLE = `
   button.danger { color:#a3221a; border-color:#d8b3ae }
   @media (prefers-color-scheme: dark) { button.danger { color:#ffb4ab; border-color:#98625c } }
   button.primary { background:var(--accent); border-color:var(--accent); color:#fff }
+  @media (prefers-color-scheme: dark) { button.primary { color:#0c1524 } }
   .card { border:1px solid var(--rule); border-radius:12px; background:var(--raised);
     padding:1.25rem; margin-bottom:1rem }
   .card.unread { border-left:4px solid var(--accent) }
@@ -98,9 +99,9 @@ export const CSP = [
   "object-src 'none'",
 ].join('; ')
 
-function shell(title, body) {
+export function shell(title, body, lang = 'ro') {
   return `<!doctype html>
-<html lang="ro"><head><meta charset="utf-8">
+<html lang="${lang}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>${escapeHtml(title)}</title><style>${STYLE}</style></head>
@@ -186,7 +187,7 @@ export function messagesPage(rows, { insecure, mailConfigured = true } = {}) {
           <p class="muted">${rows.length} în total · ${unread} necitite</p>
         </div>
         <div style="display:flex;gap:.5rem">
-          <a class="btn" href="/cont">Contul meu</a>
+          <a class="btn" href="/cont">Contul meu</a><a class="btn" href="/admin/health">Starea serviciilor</a>
           <a class="btn" href="/admin/export.csv">Export CSV</a>
           <form class="inline" method="post" action="/admin/logout"><button type="submit">Ieși</button></form>
         </div>
@@ -227,115 +228,4 @@ export function csv(rows) {
       .join(','),
   )
   return `﻿${header.map(cell).join(',')}\n${lines.join('\n')}\n`
-}
-
-
-/* ── Conturi de client ─────────────────────────────────────────────────────── */
-
-function accountShell(title, body) {
-  return shell(
-    title,
-    `<div class="wrap" style="max-width:46rem">
-      <header>
-        <div><h1>${escapeHtml(title)}</h1></div>
-        <a class="btn" href="/">Înapoi la site</a>
-      </header>
-      ${body}
-    </div>`,
-  )
-}
-
-export function registerPage({ error, values = {} } = {}) {
-  return accountShell(
-    'Creare cont',
-    `<p class="muted" style="margin-bottom:1.5rem">Contul vă arată cererile trimise prin formularul de contact cât timp sunteți autentificat, împreună cu starea lor.</p>
-     ${error ? `<p class="error" style="margin-bottom:1rem">${escapeHtml(error)}</p>` : ''}
-     <form method="post" action="/cont/inregistrare" class="card">
-       <label for="name">Nume</label>
-       <input id="name" name="name" value="${escapeHtml(values.name)}" autocomplete="name" required>
-       <label for="email" style="margin-top:1rem">E-mail</label>
-       <input id="email" name="email" type="email" value="${escapeHtml(values.email)}" autocomplete="email" required>
-       <label for="password" style="margin-top:1rem">Parolă <span class="muted">(minimum 10 caractere)</span></label>
-       <input id="password" name="password" type="password" autocomplete="new-password" required minlength="10">
-       <button class="primary" type="submit" style="margin-top:1.25rem;width:100%">Creează contul</button>
-     </form>
-     <p class="muted" style="margin-top:1rem">Aveți deja cont? <a href="/cont/autentificare">Autentificați-vă</a>.</p>
-     <p class="warn" style="margin-top:1.5rem"><strong>Adresa de e-mail nu este verificată.</strong> Nu trimitem încă e-mailuri de confirmare, așa că un cont nou nu vede cererile trimise anterior de la aceeași adresă — vede doar cererile trimise după autentificare.</p>`,
-  )
-}
-
-export function accountLoginPage({ error, next } = {}) {
-  return accountShell(
-    'Autentificare',
-    `${error ? `<p class="error" style="margin-bottom:1rem">${escapeHtml(error)}</p>` : ''}
-     <form method="post" action="/cont/autentificare" class="card">
-       ${next ? `<input type="hidden" name="catre" value="${escapeHtml(next)}">` : ''}
-       <label for="email">E-mail</label>
-       <input id="email" name="email" type="email" autocomplete="email" required autofocus>
-       <label for="password" style="margin-top:1rem">Parolă</label>
-       <input id="password" name="password" type="password" autocomplete="current-password" required>
-       <button class="primary" type="submit" style="margin-top:1.25rem;width:100%">Intră în cont</button>
-     </form>
-     <p class="muted" style="margin-top:1rem">Nu aveți cont? <a href="/cont/inregistrare">Creați unul</a>.</p>`,
-  )
-}
-
-export function accountPage(user, rows, { notice, error } = {}) {
-  const created = formatDate(user.created_at)
-  const open = rows.filter((row) => row.status !== 'închis').length
-
-  const list = rows
-    .map(
-      (row) => `
-      <article class="card">
-        <div class="meta">
-          <span class="mono">#${row.id}</span>
-          <span class="mono">${escapeHtml(formatDate(row.created_at))}</span>
-          ${row.topic ? `<span class="muted">${escapeHtml(row.topic)}</span>` : ''}
-          <span class="muted">stare: <strong>${escapeHtml(row.status)}</strong></span>
-        </div>
-        <div class="body">${escapeHtml(row.message)}</div>
-      </article>`,
-    )
-    .join('')
-
-  return accountShell(
-    'Contul meu',
-    `${notice ? `<p class="ok">${escapeHtml(notice)}</p>` : ''}
-     ${error ? `<p class="error" style="margin-bottom:1rem">${escapeHtml(error)}</p>` : ''}
-
-     <p class="muted" style="margin-bottom:1.5rem">Bună, ${escapeHtml(user.name || user.email)}.</p>
-
-     <div class="facts">
-       <div><span>Nume</span><strong>${escapeHtml(user.name || '—')}</strong></div>
-       <div><span>E-mail</span><strong>${escapeHtml(user.email)}</strong></div>
-       <div><span>Cont creat</span><strong>${escapeHtml(created)}</strong></div>
-       <div><span>Cereri</span><strong>${rows.length} · ${open} în curs</strong></div>
-       ${user.role === 'admin' ? '<div><span>Rol</span><strong>Administrator</strong></div>' : ''}
-     </div>
-
-     <div style="display:flex;gap:.5rem;margin:1.5rem 0;flex-wrap:wrap">
-       <a class="btn primary" href="/contact">Trimite o cerere nouă</a>
-       ${user.role === 'admin' ? '<a class="btn" href="/admin">Administrare mesaje</a>' : ''}
-       <form class="inline" method="post" action="/cont/iesire"><button type="submit">Ieși din cont</button></form>
-     </div>
-
-     <h2 style="margin:2rem 0 1rem">Cererile mele</h2>
-     ${rows.length ? list : '<p class="empty">Nicio cerere trimisă din acest cont încă. Cererile trimise prin formularul de contact cât timp sunteți autentificat apar aici.</p>'}
-
-     <h2 style="margin:2.5rem 0 1rem">Datele contului</h2>
-     <form method="post" action="/cont/date" class="card">
-       <label for="name">Nume</label>
-       <input id="name" name="name" value="${escapeHtml(user.name)}" autocomplete="name" required>
-       <button type="submit" style="margin-top:1rem">Salvează numele</button>
-     </form>
-
-     <form method="post" action="/cont/parola" class="card">
-       <label for="current">Parola actuală</label>
-       <input id="current" name="current" type="password" autocomplete="current-password" required>
-       <label for="next" style="margin-top:1rem">Parola nouă <span class="muted">(minimum 10 caractere)</span></label>
-       <input id="next" name="next" type="password" autocomplete="new-password" required minlength="10">
-       <button type="submit" style="margin-top:1rem">Schimbă parola</button>
-     </form>`,
-  )
 }

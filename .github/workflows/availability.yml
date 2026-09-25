@@ -1,0 +1,25 @@
+name: Production availability
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+permissions: {}
+jobs:
+  https:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check public website and API
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --retry 3 --retry-all-errors --retry-delay 5 --connect-timeout 10 --max-time 20 https://danenachesoft.space/ -o /tmp/danensoft-home.html
+          curl --fail --silent --show-error --retry 3 --retry-all-errors --retry-delay 5 --connect-timeout 10 --max-time 20 https://danenachesoft.space/api/health -o /tmp/danensoft-health.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          assert '<h1' in Path('/tmp/danensoft-home.html').read_text()
+          result = json.loads(Path('/tmp/danensoft-health.json').read_text())
+          assert result['status'] == 'ok'
+          print('HTTPS website and API are available.')
+          PY

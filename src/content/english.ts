@@ -1,5 +1,11 @@
 /** Traduceri EN. Cheile sunt textele românești; identificatorii și URL-urile rămân stabile. */
 export const english: Record<string, string> = {
+  "Confirmăm adresa de e-mail printr-un link trimis prin Gmail, valabil 24 de ore. Recuperarea parolei folosește un link separat, valabil 30 de minute și utilizabil o singură dată. Resetarea parolei închide sesiunile existente. Contul afișează doar cererile trimise cât timp sunteți autentificat; cererile anterioare nu sunt asociate automat.": "We verify your email address using a link sent through Gmail, valid for 24 hours. Password recovery uses a separate single-use link valid for 30 minutes. Resetting the password ends existing sessions. Your account only displays requests sent while signed in; earlier requests are not linked automatically.",
+  "Navigarea fără autentificare nu necesită cookie-uri. Conturile de client și administrarea folosesc un cookie strict necesar pentru autentificare, valabil 30 de zile pentru clienți și 12 ore pentru administratori. Nu folosim instrumente de analiză a traficului și nu încărcăm fonturi, hărți sau scripturi de la terți.": "Browsing without signing in does not require cookies. Customer accounts and administration use a cookie strictly necessary for authentication, valid for 30 days for customers and 12 hours for administrators. We do not use traffic analytics or load third-party fonts, maps or scripts.",
+  "Aplicații web și integrări": "Web applications and integrations",
+  "pentru afacerea dumneavoastră.": "for your business.",
+  "25 septembrie 2026": "25 September 2026",
+
   "Preferința pentru temă este salvată local în browser, în localStorage, sub cheia dan-enache-theme. Nu ne este transmisă și dispare când ștergeți datele site-ului. Limba este determinată de adresa paginii: paginile în engleză folosesc prefixul /en/.": "Your theme preference is saved locally in your browser using localStorage, under dan-enache-theme. It is not sent to us and is removed when you clear the website’s data. The language is determined by the page address: English pages use the /en/ prefix.",
   "Dan Enache — aplicații cloud și produse SaaS": "Dan Enache — cloud applications and SaaS products",
   "Vezi studiul de caz: {name}": "View case study: {name}",

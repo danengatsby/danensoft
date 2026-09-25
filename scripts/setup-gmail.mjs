@@ -2,7 +2,7 @@
  * sudo node scripts/setup-gmail.mjs
  */
 import { stdin, stdout } from 'node:process'
-import { readFile, writeFile, rename, unlink } from 'node:fs/promises'
+import { readFile, writeFile, rename, unlink, stat, chown, chmod } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import nodemailer from 'nodemailer'
@@ -38,9 +38,12 @@ function askHidden() {
 }
 
 async function save(content) {
+  const metadata = await stat(destination)
   const temporary = `${destination}.${randomUUID()}.tmp`
   try {
     await writeFile(temporary, content, { mode: 0o600, flag: 'wx' })
+    await chown(temporary, metadata.uid, metadata.gid)
+    await chmod(temporary, metadata.mode & 0o777)
     await rename(temporary, destination)
   } finally {
     await unlink(temporary).catch(error => { if (error.code !== 'ENOENT') throw error })
@@ -49,7 +52,7 @@ async function save(content) {
 
 async function main() {
   if (process.getuid?.() !== 0 || !stdin.isTTY) {
-    throw new Error('Rulează într-un terminal al serverului: sudo node /var/www/danen/scripts/setup-gmail.mjs')
+    throw new Error('Rulează într-un terminal al serverului: sudo /usr/local/bin/node /var/www/danensoft/scripts/setup-gmail.mjs')
   }
   const password = await askHidden()
   if (!/^[a-zA-Z0-9]{16}$/.test(password)) {
@@ -83,6 +86,10 @@ async function main() {
       throw new Error('Serviciul nu a pornit cu noile setări. Configurația anterioară a fost restaurată; verifică systemctl status danen-api.')
     }
     stdout.write('Gmail configurat. Formularul trimite notificări către moldovanlux@gmail.com.\n')
+    if (!process.argv.includes('--send-test')) {
+      stdout.write('Conexiunea și autentificarea au fost verificate. Nu a fost trimis un e-mail de test.\n')
+      return
+    }
     try {
       const info = await transport.sendMail({
         from: `Dan Enache <${account}>`, to: account,

@@ -19,7 +19,7 @@ export default function Home() {
       <section className="wrap company-hero">
         <div className="company-hero__copy">
           <p className="eyebrow">{t("Dan Enache · Dezvoltare software")}</p>
-          <h1>{t("Software potrivit")}<br />{t("afacerii dumneavoastră.")}</h1>
+          <h1>{t("Aplicații web și integrări")}<br />{t("pentru afacerea dumneavoastră.")}</h1>
           <p className="company-hero__lead">{t("Dezvoltăm aplicații web, conectăm sisteme și automatizăm procese. Un partener tehnic pentru tot parcursul proiectului, de la analiză la lansare și mentenanță.")}</p>
           <div className="btn-row">
             <Link to="/contact" className="btn btn--primary">{t("Discutăm proiectul ")}<ArrowUpRight /></Link>

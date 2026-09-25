@@ -1,5 +1,6 @@
+import { encryptBackup, decryptBackup } from './lib/encrypted-backup.mjs'
 /** Backup extern prin SSH, descărcare și verificare a restaurării. */
-import { mkdtemp, rm, rename, writeFile, chmod, copyFile } from 'node:fs/promises'
+import { mkdtemp, rm, rename, writeFile, chmod, copyFile, mkdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
@@ -18,16 +19,28 @@ const work = await mkdtemp(join(tmpdir(), 'danen-offsite-'))
 const id = `backup-${new Date().toISOString().replaceAll(/[:.]/g, '-')}-${randomUUID().slice(0, 8)}`
 const remote = `${directory}/${id}`
 try {
-  const upload = join(work, 'upload.db')
-  await copyFile(snapshot.target, upload)
-  await chmod(upload, 0o600)
+  const payload = join(work, 'payload')
+  await mkdir(payload, { mode:0o700 })
+  await copyFile(snapshot.target, join(payload, 'messages.db'))
+  await copyFile('/etc/danen/api.env', join(payload, 'api.env'))
+  const archive = join(work,'backup.tar')
+  await run('tar',['-cf',archive,'-C',payload,'messages.db','api.env'])
+  const upload = join(work,'backup.enc')
+  const key = process.env.DANEN_BACKUP_KEY ?? '/etc/danen/backup.key'
+  await encryptBackup(archive, upload, key)
+
   // Director nou, privat; nu ștergem copiile de pe destinație.
   await run('ssh', [...ssh, host, `umask 077; mkdir -p ${directory}; mkdir ${remote}`])
-  await run('rsync', ['--archive', '--chmod=F600', '--timeout=60', '-e', transport, upload, `${host}:${remote}/messages.db`])
-  const restored = join(work, 'messages.db')
-  await run('rsync', ['--archive', '--timeout=60', '-e', transport, `${host}:${remote}/messages.db`, restored])
+  await run('rsync', ['--archive', '--chmod=F600', '--timeout=60', '-e', transport, upload, `${host}:${remote}/backup.enc`])
+  const restored = join(work, 'download.enc')
+  await run('rsync', ['--archive', '--timeout=60', '-e', transport, `${host}:${remote}/backup.enc`, restored])
   if (await checksum(restored) !== await checksum(upload)) throw new Error('Checksum diferit după descărcarea backupului extern')
-  const restoredCounts = verifyBackup(restored)
+  const decoded = join(work, 'decoded.tar')
+  await decryptBackup(restored, decoded, key)
+  const extracted = join(work, 'restored')
+  await mkdir(extracted, { mode:0o700 })
+  await run('tar', ['-xf', decoded, '-C', extracted])
+  const restoredCounts = verifyBackup(join(extracted, 'messages.db'))
   // Doar o copie descărcată și verificată primește marcajul de succes.
   const receipt = join(work, 'verified.json')
   await writeFile(receipt, JSON.stringify({ id, verifiedAt: new Date().toISOString(), sha256: await checksum(restored), ...restoredCounts }, null, 2))

@@ -4,8 +4,8 @@ import { spawn } from 'node:child_process'
 
 /** Valorile ajung și în shell-ul distant: acceptăm doar un alfabet restrâns. */
 export function validateDestination(host, directory) {
-  if (!/^[a-zA-Z0-9_][a-zA-Z0-9_-]*@[a-zA-Z0-9][a-zA-Z0-9.-]*$/.test(host ?? '')) throw new Error('Hôte requis au format utilisateur@serveur')
-  if (!/^\/[a-zA-Z0-9_/-]+$/.test(directory ?? '') || directory === '/' || directory.includes('//')) throw new Error('Chemin distant absolu requis, sans espaces ni caractères spéciaux')
+  if (!/^[a-zA-Z0-9_][a-zA-Z0-9_-]*@[a-zA-Z0-9][a-zA-Z0-9.-]*$/.test(host ?? '')) throw new Error('Destinație necesară în format utilizator@server')
+  if (!/^\/[a-zA-Z0-9_/-]+$/.test(directory ?? '') || directory === '/' || directory.includes('//')) throw new Error('Cale externă absolută necesară, fără spații sau caractere speciale')
   return { host, directory: directory.replace(/\/$/, '') }
 }
 export async function checksum(path) {

@@ -8,7 +8,7 @@
 
 export type PrivacySection = { title: string; body: string[] }
 
-export const privacyUpdated = '24 septembrie 2026'
+export const privacyUpdated = '25 septembrie 2026'
 
 export const privacySections: PrivacySection[] = [
   {
@@ -38,7 +38,7 @@ export const privacySections: PrivacySection[] = [
     title: 'Contul de client',
     body: [
       'Crearea unui cont este opțională. Dacă vă faceți cont, stocăm numele, adresa de e-mail și parola în formă criptată ireversibil (scrypt). Nu putem citi parola și nu o putem recupera.',
-      'Adresa de e-mail a contului nu este verificată printr-un mesaj de confirmare; trimiterea prin Gmail este folosită pentru notificările formularului de contact. Din acest motiv, un cont nou nu vede cererile trimise anterior de la aceeași adresă: în cont apar doar cererile trimise cât timp sunteți autentificat. Este o măsură deliberată, ca nimeni să nu poată citi cererile altcuiva înregistrându-se cu adresa lui.',
+      'Confirmăm adresa de e-mail printr-un link trimis prin Gmail, valabil 24 de ore. Recuperarea parolei folosește un link separat, valabil 30 de minute și utilizabil o singură dată. Resetarea parolei închide sesiunile existente. Contul afișează doar cererile trimise cât timp sunteți autentificat; cererile anterioare nu sunt asociate automat.',
       'Autentificarea folosește un cookie de sesiune strict necesar, valabil 30 de zile, pe care îl ștergeți ieșind din cont.',
     ],
   },
@@ -52,7 +52,7 @@ export const privacySections: PrivacySection[] = [
   {
     title: 'Cookie-uri, analiză și servicii externe',
     body: [
-      'Site-ul public nu folosește cookie-uri, nu are instrumente de analiză a traficului și nu încarcă fonturi, hărți sau scripturi de la terți. Nicio pagină nu face cereri către alte domenii. Zona de administrare, accesibilă doar nouă, folosește un cookie de sesiune strict necesar pentru autentificare.',
+      'Navigarea fără autentificare nu necesită cookie-uri. Conturile de client și administrarea folosesc un cookie strict necesar pentru autentificare, valabil 30 de zile pentru clienți și 12 ore pentru administratori. Nu folosim instrumente de analiză a traficului și nu încărcăm fonturi, hărți sau scripturi de la terți.',
       'Preferința pentru temă este salvată local în browser, în localStorage, sub cheia dan-enache-theme. Nu ne este transmisă și dispare când ștergeți datele site-ului. Limba este determinată de adresa paginii: paginile în engleză folosesc prefixul /en/.',
       'Serverul care găzduiește site-ul înregistrează, ca orice server web, adresa IP și pagina accesată, în jurnale tehnice folosite pentru funcționare și securitate.',
     ],

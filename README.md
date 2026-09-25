@@ -1,7 +1,13 @@
+> Operare curentă: [deploy/operations.md](deploy/operations.md).
+
 # Dan Enache — site de prezentare
 
 Site de prezentare pentru aplicații cloud și produse SaaS: React + Vite +
 TypeScript, pagini prerandate, navigație accesibilă și formular de contact validat.
+
+## Instalarea pe AWS
+
+Starea și comenzile pentru ubuntu-aws sunt în [deploy/ubuntu-aws.md](deploy/ubuntu-aws.md).
 
 ## Rulare
 
@@ -123,10 +129,10 @@ Site-ul rulează la **https://danenachesoft.space** (HTTP redirectează automat)
 
 | Element | Valoare |
 | --- | --- |
-| Configurație nginx | `/etc/nginx/sites-available/danenachesoft` |
-| Rădăcină servită | `/var/www/danen/current` |
+| Configurație nginx | `/etc/nginx/sites-available/danensoft` |
+| Rădăcină servită | `/var/www/danensoft/current` |
 | Certificat | Let's Encrypt, reînnoit automat de `certbot.timer` |
-| Adresă internă de rezervă | `http://159.69.200.202:8090` |
+| API intern | `http://127.0.0.1:8091` |
 
 Build-ul produce în `.build/dist/` 20 de pagini publice prerandate (10 RO și
 10 EN), plus `404.html` și `en/404.html`.
@@ -161,13 +167,9 @@ a blocării. Release-urile și resursele partajate nu sunt șterse automat.
 Configurația CSP activă este verificată înainte de publicare; dacă se schimbă
 scripturile inline, rulați `npm run csp:hash` și actualizați configurația nginx
 înainte de deploy. `DANEN_DEPLOY_URL` permite verificarea unei instanțe de test.
-Acest mecanism versionază site-ul static. Serviciul Node și migrările bazei
-nu sunt anulate prin `npm run rollback`.
+Fiecare release include site-ul static, API-ul și dependențele de producție. `api-current` indică runtime-ul activ. Revenirea restaurează codul frontend și backend; baza curentă este păstrată. Migrările trebuie să rămână compatibile cu versiunea precedentă. Detalii: [operations.md](deploy/operations.md).
 
-Migrarea din 24 septembrie păstrează versiunea publică existentă drept
-`baseline-20260924`. Vechiul `dist/` este păstrat pentru recuperare, dar nu mai
-este destinație de build sau rădăcină nginx. Studiile de caz rămân în candidatul
-de build până la publicarea lor explicită.
+Configurația AWS și versiunea de referință din 25 septembrie sunt documentate în [deploy/ubuntu-aws.md](deploy/ubuntu-aws.md).
 
 ## Design
 
@@ -224,8 +226,7 @@ alimentează linkurile, metadatele, prerandarea și sitemap-ul generat la build.
 Fiecare pagină are canonical propriu și alternative reciproce `ro`, `en` și
 `x-default` (română). Sitemap-ul include toate cele 20 de adrese. Paginile 404
 sunt traduse, au `noindex,follow` și nu au canonical sau alternative hreflang.
-Conturile și administrarea servite de Node, precum și mesajele automate prin
-e-mail, păstrează limba română.
+Paginile de cont și e-mailurile de confirmare/resetare sunt disponibile în RO și EN. Administrarea mesajelor și notificările formularului de contact folosesc româna.
 
 `npm run qa` verifică ambele limbi și teme: 176 combinații de pagină și ecran.
 
@@ -262,14 +263,7 @@ scrierile recente stau în `messages.db-wal`, iar o copiere a fișierului
 principal ar da o copie veche sau incoerentă. Serviciul poate rămâne pornit în
 timpul copierii.
 
-Restaurare (serviciul trebuie oprit, altfel scrie peste):
-
-```bash
-systemctl stop danen-api
-sudo -u danen cp /var/backups/danen/messages-<data>.db /var/lib/danen/messages.db
-sudo -u danen rm -f /var/lib/danen/messages.db-wal /var/lib/danen/messages.db-shm
-systemctl start danen-api
-```
+Restaurarea necesită oprirea API-ului, salvarea stării curente, verificarea copiei și gestionarea fișierelor WAL/SHM. Urmați procedura din [deploy/operations.md](deploy/operations.md); nu înlocuiți baza în timp ce API-ul rulează.
 
 Copiile locale rămân pe același server. Este pregătit și un mecanism extern
 prin SSH/rsync, care necesită destinația furnizată de proprietar:
@@ -279,8 +273,7 @@ prin SSH/rsync, care necesită destinația furnizată de proprietar:
    în `/etc/danen/`, accesibile numai utilizatorului `danen`; verificați separat
    amprenta gazdei. Destinația trebuie să aibă `rsync` instalat.
 2. Rulați serviciul `danen-backup-offsite` pentru o probă. Fiecare execuție creează
-   o copie SQLite coerentă, o transferă într-un director privat nou, o descarcă
-   din nou, compară SHA-256 și verifică integritatea, relațiile și tabelele.
+   o copie SQLite coerentă, o criptează împreună cu api.env, transferă arhiva într-un director privat nou, o descarcă din nou, compară SHA-256, o decriptează și verifică integritatea, relațiile și tabelele.
 3. După prima probă reușită, activați `danen-backup-offsite.timer` (zilnic,
    03:45 UTC, cu întârziere aleatoare de până la 15 minute).
 
@@ -288,8 +281,7 @@ Numai directoarele externe cu `verified.json` sunt copii confirmate.
 `/var/backups/danen/offsite-status.json` arată ultima reușită; o eroare ulterioară
 este raportată de systemd, fără să șteargă reușita anterioară. Copiile de pe
 serverul extern nu se șterg automat: retenția trebuie stabilită pe destinație.
-Scriptul nu transferă secretele SMTP și nu înlocuiește backupul surselor Git.
-Transportul este criptat prin SSH; criptarea stocării externe depinde de destinație.
+Arhiva include SQLite și configurația SMTP, criptate AES-256-GCM înainte de transferul SSH. Cheia este păstrată separat în /etc/danen/backup.key și trebuie salvată într-un seif extern. Codul se păstrează în GitHub.
 Până la configurare și prima probă reușită, **backupul extern nu este activ**.
 
 Serviciul folosește module Node (`node:sqlite`, `node:crypto`, `node:http`) și, doar
@@ -303,19 +295,18 @@ de răspuns de două zile lucrătoare și permite răspuns direct către Dan Ena
 nu include conținutul introdus în formular. Un eșec SMTP nu anulează salvarea cererii.
 `Reply-To` folosește adresa vizitatorului în notificare și adresa de contact în
 confirmare. Parola este păstrată numai pe server,
-în `/etc/danen/api.env` (acces root, permisiuni 600), niciodată în depozit.
+în `/etc/danen/api.env` (root:danen, permisiuni 640), niciodată în depozit.
 
-**Activat la 24 septembrie 2026.** Autentificarea a reușit, iar Gmail a acceptat
-mesajul de test. Mesajele se păstrează și în baza de date. Pentru schimbarea
+**Verificat pe AWS la 25 septembrie 2026.** Formularul a salvat cererea, iar cele două notificări și invitația administratorului au fost identificate în Inbox prin Message-ID. Mesajele se păstrează și în baza de date. Pentru schimbarea
 parolei de aplicație, creați una pentru contul `moldovanlux@gmail.com`, apoi rulați
 într-un terminal al serverului:
 
 ```bash
-sudo node /var/www/danen/scripts/setup-gmail.mjs
+sudo node /var/www/danensoft/scripts/setup-gmail.mjs
 ```
 
 Comanda solicită parola fără afișare, verifică autentificarea înainte de salvare,
-păstrează celelalte setări din fișier, repornește `danen-api` și trimite un test.
+păstrează celelalte setări din fișier și repornește `danen-api`. Un test se trimite numai cu opțiunea explicită --send-test.
 Dacă repornirea eșuează, restaurează configurația anterioară. Un răspuns de acceptare
 SMTP confirmă predarea către Gmail; verificați și Inbox/Spam pentru primire.
 Verificarea ulterioară fără expediere: `npm run mail:test`.
@@ -366,14 +357,11 @@ Vizitatorii își pot crea cont la `/cont/inregistrare`. După autentificare, `/
 arată cererile trimise **din acel cont**, cu starea fiecăreia. Paginile sunt
 randate pe server, ca și administrarea.
 
-Legătura dintre cerere și cont se face prin sesiune, nu prin adresa de e-mail
-scrisă în formular. Motivul: adresele nu sunt verificate prin e-mail, deci
-potrivirea după adresă ar permite cuiva să citească cererile altcuiva
-înregistrându-se cu adresa lui. Cererile trimise fără autentificare rămân
-nelegate de vreun cont.
+Legătura dintre cerere și cont se face prin sesiune. Cererile trimise fără autentificare rămân nelegate de vreun cont; nu se asociază retroactiv pe baza adresei.
 
-Confirmarea adresei și resetarea parolei conturilor nu sunt implementate.
-Expedierea prin Gmail este folosită deocamdată pentru notificările formularului.
+Confirmarea adresei folosește linkuri valabile 24h și cere parola aleasă la înregistrare.
+Recuperarea de la /cont/recuperare trimite linkuri de unică folosință, valabile 30min.
+Resetarea invalidează sesiunile și linkurile vechi. Adăugați ?lang=en pentru paginile în engleză.
 
 ### Administrare
 
@@ -396,16 +384,16 @@ sudo -u danen node scripts/set-admin.mjs email@exemplu.ro
 ```
 
 Comanda cere parola interactiv, o transformă în hash scrypt și, dacă adresa are
-deja cont, doar îi ridică rolul. Parola în clar nu se salvează nicăieri.
+deja cont, actualizează parola și rolul și invalidează sesiunile anterioare. Parola în clar nu se salvează nicăieri.
 
 ### Protecții
 
 - limitare de rată per IP: 5 mesaje / 10 minute, 8 autentificări / 15 minute și
-  5 conturi noi / oră
+  8 cereri de înregistrare/recuperare/retrimitere / 15 minute; maximum 3 e-mailuri de cont / oră per adresă
 - limitare de rată per cont: 20 de autentificări / oră pe aceeași adresă,
   oricâte adrese IP ar folosi cine încearcă; socoteala se șterge la prima
   autentificare reușită
-- parolele conturilor: minimum 10 caractere, stocate cu scrypt
+- parolele conturilor: între 10 și 128 de caractere, stocate cu scrypt
 - la autentificare greșită, același mesaj **și același timp de răspuns**,
   indiferent dacă adresa are cont sau nu
 - schimbarea parolei invalidează toate celelalte sesiuni ale contului

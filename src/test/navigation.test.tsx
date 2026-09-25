@@ -15,7 +15,7 @@ describe('rutare', () => {
   it('afișează pagina principală', () => {
     renderAt('/')
     expect(
-      screen.getByRole('heading', { level: 1, name: /software potrivit/i }),
+      screen.getByRole('heading', { level: 1, name: /aplicații web și integrări/i }),
     ).toBeInTheDocument()
   })
 

@@ -1,17 +1,18 @@
 [Unit]
 Description=Moldovan Lux - copie de siguranta a bazei de mesaje
-Documentation=file:///var/www/danen/scripts/backup.mjs
+Documentation=file:///var/www/danensoft/scripts/backup.mjs
 After=network.target
 
 [Service]
+UMask=0077
 Type=oneshot
 User=danen
 Group=danen
-WorkingDirectory=/var/www/danen
+WorkingDirectory=/var/www/danensoft
 Environment=DANEN_DB=/var/lib/danen/messages.db
 Environment=DANEN_BACKUP_DIR=/var/backups/danen
 Environment=DANEN_BACKUP_KEEP=14
-ExecStart=/usr/bin/node --no-warnings /var/www/danen/scripts/backup.mjs
+ExecStart=/usr/local/bin/node --no-warnings /var/www/danensoft/scripts/backup.mjs
 
 # Aceleasi restrictii ca serviciul principal, plus dreptul de scriere in
 # directorul de copii. Baza se citeste, nu se modifica.

@@ -10,9 +10,12 @@
 # antetele de mai sus, deci fișierele trebuie incluse din nou acolo.
 
 server {
-    listen 80;
-    server_name danenachesoft.space www.danenachesoft.space;
+    client_max_body_size 64k;
+    server_name 3.66.232.196 localhost danenachesoft.space www.danenachesoft.space;
 
+    if ($host = www.danenachesoft.space) {
+        return 301 https://danenachesoft.space$request_uri;
+    }
     root /var/www/danensoft/current;
     index index.html;
     error_page 404 /404.html;
@@ -37,6 +40,7 @@ server {
     # Conturile sunt randate de Node. /cont are potrivire exactă pentru a nu
     # intercepta pagina publică /contact; /cont/ acoperă acțiunile contului.
     location = /cont {
+        access_log off;
         proxy_pass http://127.0.0.1:8091;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
@@ -47,6 +51,7 @@ server {
     }
 
     location /cont/ {
+        access_log off;
         proxy_pass http://127.0.0.1:8091;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
@@ -114,7 +119,45 @@ server {
         include snippets/danen-csp.conf;
     }
 
+    location ~ \.html$ {
+        try_files $uri =404;
+        add_header Cache-Control "no-cache" always;
+        include snippets/danen-headers.conf;
+        include snippets/danen-csp.conf;
+    }
+
     gzip on;
     gzip_types text/css application/javascript image/svg+xml;
     gzip_min_length 1024;
+
+    listen 443 ssl; # managed by Certbot
+    listen [::]:443 ssl ipv6only=on; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/danenachesoft.space/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/danenachesoft.space/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+
+}
+
+
+server {
+    if ($host = www.danenachesoft.space) {
+        return 301 https://danenachesoft.space$request_uri;
+    } # managed by Certbot
+
+
+    if ($host = danenachesoft.space) {
+        return 301 https://danenachesoft.space$request_uri;
+    } # managed by Certbot
+
+
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name 3.66.232.196 localhost danenachesoft.space www.danenachesoft.space;
+    return 404; # managed by Certbot
+
+
+
+
 }

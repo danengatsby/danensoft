@@ -4,12 +4,15 @@ export const MAIL_RETRY_DELAYS = [60_000, 300_000, 900_000, 3_600_000, 21_600_00
 export const MAIL_MAX_ATTEMPTS = MAIL_RETRY_DELAYS.length + 1
 
 /** Coada folosește aceeași conexiune și tranzacție ca mesajele de contact. */
-export function createMailQueue(db) {
+export function createMailQueue(db, { account = false } = {}) {
+  const table = account ? 'account_mail_jobs' : 'mail_jobs'
+  const owner = account ? 'users' : 'messages'
+  const kinds = account ? "'verify', 'reset'" : "'admin', 'confirmation'"
   db.exec(`
-    CREATE TABLE IF NOT EXISTS mail_jobs (
+    CREATE TABLE IF NOT EXISTS ${table} (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
-      kind TEXT NOT NULL CHECK(kind IN ('admin', 'confirmation')),
+      message_id INTEGER NOT NULL REFERENCES ${owner}(id) ON DELETE CASCADE,
+      kind TEXT NOT NULL CHECK(kind IN (${kinds})),
       payload TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'sending', 'sent', 'failed')),
       attempts INTEGER NOT NULL DEFAULT 0,
@@ -22,28 +25,28 @@ export function createMailQueue(db) {
       smtp_id TEXT,
       UNIQUE(message_id, kind)
     );
-    CREATE INDEX IF NOT EXISTS idx_mail_jobs_due ON mail_jobs(status, next_attempt_at);
+    CREATE INDEX IF NOT EXISTS idx_${table}_due ON ${table}(status, next_attempt_at);
   `)
-  const insert = db.prepare(`INSERT INTO mail_jobs (message_id, kind, payload, created_at, next_attempt_at)
+  const insert = db.prepare(`INSERT INTO ${table} (message_id, kind, payload, created_at, next_attempt_at)
     VALUES (?, ?, ?, ?, ?)`)
-  const claim = db.prepare(`UPDATE mail_jobs SET status = 'sending', attempts = attempts + 1,
+  const claim = db.prepare(`UPDATE ${table} SET status = 'sending', attempts = attempts + 1,
     lease_until = ?, lease_token = ? WHERE id = (
-      SELECT id FROM mail_jobs WHERE attempts < ? AND
+      SELECT id FROM ${table} WHERE attempts < ? AND
         ((status = 'pending' AND next_attempt_at <= ?) OR (status = 'sending' AND lease_until <= ?))
       ORDER BY next_attempt_at, id LIMIT 1
     ) RETURNING *`)
-  const expire = db.prepare(`UPDATE mail_jobs SET status = 'failed', lease_until = NULL, lease_token = NULL,
+  const expire = db.prepare(`UPDATE ${table} SET status = 'failed', lease_until = NULL, lease_token = NULL,
     last_error = 'Procesul de expediere a fost întrerupt; rezultatul ultimei încercări este necunoscut.'
     WHERE status = 'sending' AND lease_until <= ? AND attempts >= ?`)
-  const renew = db.prepare(`UPDATE mail_jobs SET lease_until = ?
+  const renew = db.prepare(`UPDATE ${table} SET lease_until = ?
     WHERE id = ? AND status = 'sending' AND lease_token = ?`)
-  const sent = db.prepare(`UPDATE mail_jobs SET status = 'sent', sent_at = ?, smtp_id = ?,
+  const sent = db.prepare(`UPDATE ${table} SET status = 'sent', sent_at = ?, smtp_id = ?,
     last_error = NULL, lease_until = NULL, lease_token = NULL, payload = '{}'
     WHERE id = ? AND status = 'sending' AND lease_token = ?`)
-  const retry = db.prepare(`UPDATE mail_jobs SET status = ?, next_attempt_at = ?, last_error = ?,
+  const retry = db.prepare(`UPDATE ${table} SET status = ?, next_attempt_at = ?, last_error = ?,
     attempts = attempts - ?, lease_until = NULL, lease_token = NULL
     WHERE id = ? AND status = 'sending' AND lease_token = ?`)
-  const retryFailed = db.prepare(`UPDATE mail_jobs SET status = 'pending', attempts = 0,
+  const retryFailed = db.prepare(`UPDATE ${table} SET status = 'pending', attempts = 0,
     next_attempt_at = ?, last_error = NULL WHERE message_id = ? AND status = 'failed'`)
 
   return {
@@ -56,6 +59,9 @@ export function createMailQueue(db) {
     },
     claim(now, leaseMs) {
       const iso = now.toISOString()
+      if (account) {
+        db.prepare("DELETE FROM account_mail_jobs WHERE status IN ('pending','failed') AND NOT EXISTS (SELECT 1 FROM account_tokens t WHERE t.user_id = account_mail_jobs.message_id AND t.purpose = account_mail_jobs.kind AND t.expires_at > ?)").run(iso)
+      }
       expire.run(iso, MAIL_MAX_ATTEMPTS)
       return claim.get(new Date(now.getTime() + leaseMs).toISOString(), randomUUID(), MAIL_MAX_ATTEMPTS, iso, iso)
     },
@@ -74,7 +80,7 @@ export function createMailQueue(db) {
       const grouped = new Map()
       if (!ids.length) return grouped
       const rows = db.prepare(`SELECT id, message_id, kind, status, attempts, next_attempt_at, last_error, sent_at
-        FROM mail_jobs WHERE message_id IN (${ids.map(() => '?').join(',')}) ORDER BY id`).all(...ids)
+        FROM ${table} WHERE message_id IN (${ids.map(() => '?').join(',')}) ORDER BY id`).all(...ids)
       for (const row of rows) {
         if (!grouped.has(row.message_id)) grouped.set(row.message_id, [])
         grouped.get(row.message_id).push(row)

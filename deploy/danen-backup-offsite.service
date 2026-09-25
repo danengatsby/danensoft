@@ -8,12 +8,12 @@ ConditionPathExists=/etc/danen/backup.env
 Type=oneshot
 User=danen
 Group=danen
-WorkingDirectory=/var/www/danen
+WorkingDirectory=/var/www/danensoft
 EnvironmentFile=/etc/danen/backup.env
 Environment=DANEN_DB=/var/lib/danen/messages.db
 Environment=DANEN_BACKUP_DIR=/var/backups/danen
 Environment=DANEN_BACKUP_KEEP=14
-ExecStart=/usr/bin/node --no-warnings /var/www/danen/scripts/backup-offsite.mjs
+ExecStart=/usr/local/bin/node --no-warnings /var/www/danensoft/scripts/backup-offsite.mjs
 TimeoutStartSec=30min
 NoNewPrivileges=yes
 PrivateTmp=yes
