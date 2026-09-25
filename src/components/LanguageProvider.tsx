@@ -1,22 +1,17 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { isLanguage, LANGUAGE_KEY, LanguageContext, readLanguage, translate, type Translator } from '../lib/language'
+import { useCallback, useEffect, useMemo, type ReactNode } from 'react'
+import { useLocation } from 'react-router-dom'
+import { LANGUAGE_KEY, LanguageContext, translate, type Translator } from '../lib/language'
+import { languageFromPath } from '../lib/routes'
 
 export default function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState(readLanguage)
+  const { pathname } = useLocation()
+  const language = languageFromPath(pathname)
   useEffect(() => {
     document.documentElement.lang = language
-    try { localStorage.setItem(LANGUAGE_KEY, language) } catch { /* Alegerea funcționează și fără stocare. */ }
+    // Migrare: URL-ul înlocuiește vechea preferință, inclusiv pentru vizitatorii existenți.
+    try { localStorage.removeItem(LANGUAGE_KEY) } catch { /* Stocarea nu este necesară. */ }
   }, [language])
-  useEffect(() => {
-    const sync = (event: StorageEvent) => {
-      if (event.key === LANGUAGE_KEY || event.key === null) {
-        setLanguage(isLanguage(event.newValue) ? event.newValue : 'ro')
-      }
-    }
-    window.addEventListener('storage', sync)
-    return () => window.removeEventListener('storage', sync)
-  }, [])
   const t = useCallback<Translator>((text, values) => translate(language, text, values), [language])
-  const value = useMemo(() => ({ language, setLanguage, t }), [language, t])
+  const value = useMemo(() => ({ language, t }), [language, t])
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
 }

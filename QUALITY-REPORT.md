@@ -1,5 +1,47 @@
 # Raport de verificare
 
+## Adrese RO / EN și HTML prerandat — 25 septembrie 2026
+
+Publicat pe HTTPS și portul 8090 în release-ul
+`2026-09-25T05-14-17-493Z-e7a500c7`; `previous` păstrează `baseline-20260924`.
+Secțiunile de mai jos sunt istoricul verificărilor, la datele respective.
+
+- Limba urmează adresa: rutele românești existente și cele engleze sub `/en/`.
+  Browserul și vechea preferință locală nu schimbă limba paginii. Selectorul
+  folosește linkuri reale către aceeași pagină și funcționează fără JavaScript.
+- Build-ul produce 22 de pagini HTML: 10 publice în fiecare limbă și două
+  pagini 404. Titlurile, descrierile, `html lang`, metadatele sociale,
+  canonical și alternativele `ro` / `en` / `x-default` sunt prerandate.
+  Sitemap-ul cu 20 de URL-uri este generat din același registru de rute.
+- nginx servește o pagină 404 engleză sub `/en/`, cu status HTTP 404,
+  `noindex,follow`, fără canonical sau hreflang. Configurația a trecut
+  `nginx -t` și a fost reîncărcată pe ambele puncte de acces.
+- ESLint, TypeScript și toate cele 238 de teste din 13 fișiere au trecut.
+  Sunt acoperite accesul direct în EN, linkurile interne traduse, metadatele,
+  istoricul, stocarea indisponibilă, păstrarea formularului și filtrelor.
+- QA Chromium pe candidat: 176 de combinații (11 pagini × 2 limbi × 2 teme
+  × 4 lățimi), fără overflow, erori de consolă, statusuri HTTP neașteptate
+  sau încălcări axe serious/critical. Raport: `qa-screens/summary.json`.
+- Verificare statică: 20 de pagini, fără erori de limbă, canonical sau
+  reciprocitate hreflang; ambele pagini 404 exclud indexarea.
+  Raport: `qa-screens/locale-static.json`.
+- Chromium fără JavaScript, pe candidat și domeniul public: toate cele
+  20 de pagini și ambele răspunsuri 404 verificate; selectorul de limbă
+  navighează corect din fiecare pagină publică.
+- Pe domeniul public, cu JavaScript: adresa EN prevalează asupra preferinței
+  RO, formularul își păstrează datele la schimbarea limbii, iar parametrii,
+  ancora, navigarea înapoi și reîncărcarea sunt corecte. Fără erori de runtime
+  sau consolă. Rapoarte: `qa-screens/locale-smoke-candidate.json` și
+  `qa-screens/locale-smoke-production.json`. Nu s-au trimis formulare sau
+  e-mailuri reale în aceste verificări.
+- Această publicare include și cele patru studii de caz pregătite anterior,
+  în ambele limbi. Rolul și responsabilitățile personale necesită în continuare
+  informații confirmate de autor pentru completarea conținutului.
+
+Conturile, administrarea și e-mailurile automate rămân în română. Verificările
+confirmă paginile servite și navigarea; indexarea efectivă în motoarele de
+căutare și experiența în Firefox, Safari sau cititoare de ecran nu au fost testate.
+
 ## Publicare versionată, Git extern și backup — 24 septembrie 2026
 
 - `npm run build` produce candidatul în `.build/dist/`. nginx servește

@@ -1,6 +1,7 @@
 import { useLanguage } from '../hooks/useLanguage'
 import { useEffect, useId, useRef, useState } from 'react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
+import { Link, NavLink } from './LocalizedLink'
 import { company, nav } from '../content/site'
 import ThemeToggle from './ThemeToggle'
 import LanguageSwitch from './LanguageSwitch'

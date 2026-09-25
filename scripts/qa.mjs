@@ -13,6 +13,11 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { chromium } from 'playwright'
 import AxeBuilder from '@axe-core/playwright'
+import { createServer } from 'vite'
+
+const vite = await createServer({ server: { middlewareMode: true, hmr: false }, appType: 'custom', logLevel: 'silent' })
+const { localizePath } = await vite.ssrLoadModule('/src/lib/routes.ts')
+await vite.close()
 
 const BASE = process.argv[2] ?? 'http://127.0.0.1:8090'
 const OUT = 'qa-screens'
@@ -57,12 +62,13 @@ for (const language of LANGUAGES) {
       await context.addInitScript(
         ({ theme, language }) => {
           window.localStorage.setItem('dan-enache-theme', theme)
-          window.localStorage.setItem('dan-enache-language', language)
+          window.localStorage.setItem('dan-enache-language', language === 'en' ? 'ro' : 'en')
         },
         { theme, language },
       )
 
-      for (const [name, route, expectedStatus] of ROUTES) {
+      for (const [name, sourceRoute, expectedStatus] of ROUTES) {
+        const route = expectedStatus === 404 && language === 'en' ? '/en/unknown-page' : localizePath(sourceRoute, language)
         const page = await context.newPage()
         const where = `${language} ${theme} ${width}px ${route}`
 

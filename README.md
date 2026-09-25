@@ -14,7 +14,7 @@ npm run dev        # server de dezvoltare
 | ------------------- | ---------------------------------------- |
 | `npm run dev`       | Server local cu reîncărcare la salvare   |
 | `npm run build`     | Verificare de tipuri + build + prerandare HTML |
-| `npm run preview`   | Servește build-ul din `dist/`            |
+| `npm run preview`   | Servește candidatul din `.build/dist/`   |
 | `npm run lint`      | ESLint                                   |
 | `npm run typecheck` | Verificare de tipuri, fără emitere       |
 | `npm test`          | Vitest                                   |
@@ -111,7 +111,8 @@ Site-ul rulează la **https://danenachesoft.space** (HTTP redirectează automat)
 | Certificat | Let's Encrypt, reînnoit automat de `certbot.timer` |
 | Adresă internă de rezervă | `http://159.69.200.202:8090` |
 
-Build-ul produce în `.build/dist/` zece pagini publice prerandate și `404.html`.
+Build-ul produce în `.build/dist/` 20 de pagini publice prerandate (10 RO și
+10 EN), plus `404.html` și `en/404.html`.
 nginx servește paginile valide inclusiv la acces direct, iar pentru adresele
 inexistente afișează pagina de eroare cu status HTTP 404. Un exemplu comentat de configurație este în
 [`deploy/nginx.conf.example`](deploy/nginx.conf.example).
@@ -179,16 +180,33 @@ randare, ca să nu apară o sclipire de temă greșită la încărcare.
 
 ## Română și engleză
 
-Comutatorul RO / EN din antet traduce toate paginile publice, navigarea,
-metadatele, textele accesibile și mesajele formularului. Alegerea este salvată
-în `localStorage` sub cheia `dan-enache-language` și sincronizată între file.
-Româna este limba implicită. Comutarea funcționează și când stocarea este blocată,
-dar preferința nu poate fi păstrată după reîncărcare în acel caz.
+Limba este stabilită de URL. Fiecare pagină publică are HTML prerandat în
+ambele limbi, inclusiv navigarea, metadatele și textele formularului.
+
+| Română | Engleză |
+| --- | --- |
+| `/` | `/en/` |
+| `/servicii/` | `/en/services/` |
+| `/proiecte/` | `/en/projects/` |
+| `/proiecte/:id/` | `/en/projects/:id/` |
+| `/despre/` | `/en/about/` |
+| `/contact/` | `/en/contact/` |
+| `/confidentialitate/` | `/en/privacy/` |
+
+Comutatorul RO / EN folosește linkuri către aceeași pagină în cealaltă limbă,
+accesibile și fără JavaScript. Linkurile interne păstrează limba curentă.
+La schimbare se păstrează parametrii URL, ancora, filtrele și datele introduse
+în formular. Pentru o adresă inexistentă, selectorul oferă pagina principală.
+Reîncărcarea și istoricul browserului păstrează limba prin adresă, inclusiv
+când stocarea este blocată. Vechea cheie `dan-enache-language` este eliminată
+la pornirea aplicației; preferințele browserului nu schimbă limba URL-ului.
 
 Traducerile se întrețin în [`src/content/english.ts`](src/content/english.ts),
-prin `useLanguage().t()`. URL-urile, identificatorii, filtrele și valorile
-introduse în formular rămân stabile la schimbarea limbii. HTML-ul prerandat
-rămâne în română, iar preferința salvată se aplică la pornirea aplicației.
+prin `useLanguage().t()`. Registrul [`src/lib/routes.ts`](src/lib/routes.ts)
+alimentează linkurile, metadatele, prerandarea și sitemap-ul generat la build.
+Fiecare pagină are canonical propriu și alternative reciproce `ro`, `en` și
+`x-default` (română). Sitemap-ul include toate cele 20 de adrese. Paginile 404
+sunt traduse, au `noindex,follow` și nu au canonical sau alternative hreflang.
 Conturile și administrarea servite de Node, precum și mesajele automate prin
 e-mail, păstrează limba română.
 

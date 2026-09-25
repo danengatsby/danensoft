@@ -23,7 +23,7 @@ it.each(publishedProjects)('deschide studiul de caz pentru $id fără a părăsi
   expect(external).toHaveAttribute('target', '_blank')
   expect(external).toHaveAttribute('rel', 'noreferrer noopener')
 
-  await user.click(screen.getByRole('button', { name: 'English' }))
+  await user.click(screen.getByRole('link', { name: 'English' }))
   expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(translate('en', project.title))
   expect(screen.getByRole('heading', { name: 'Context and challenge' })).toBeInTheDocument()
   expect(screen.getByText(translate('en', project.approach))).toBeInTheDocument()

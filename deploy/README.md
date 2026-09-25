@@ -28,10 +28,12 @@ serviciul Node de pe `127.0.0.1:8091`. `/contact` rămâne o pagină statică.
 Blocurile proxy includ antetele comune de securitate; paginile Node își trimit
 propria politică CSP, fără politica suplimentară a site-ului static.
 
-Build-ul generează paginile publice și `.build/dist/404.html`. nginx folosește
-`try_files $uri $uri/ =404` și servește intern `404.html` pentru fișierele sau
-paginile inexistente, păstrând statusul HTTP 404 și adresa cerută. Publicați
-build-ul înainte de activarea acestei configurații.
+Build-ul generează 20 de pagini publice în RO și EN, `.build/dist/404.html`
+și `.build/dist/en/404.html`. nginx folosește `try_files $uri $uri/ =404`.
+Blocul `location /en/` servește intern `/en/404.html` pentru adresele engleze
+inexistente; celelalte folosesc `/404.html`. Ambele păstrează statusul HTTP 404
+și adresa cerută, au `Cache-Control: no-store` și antetele de securitate.
+Publicați build-ul înainte de activarea acestei configurații.
 
 ## După modificare
 

@@ -1,5 +1,5 @@
 import { useLanguage } from '../hooks/useLanguage'
-import { Link } from 'react-router-dom'
+import { Link } from './LocalizedLink'
 import { ArrowUpRight } from './Icons'
 
 export default function ContactCTA() {

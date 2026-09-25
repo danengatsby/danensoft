@@ -1,5 +1,5 @@
 import { useLanguage } from '../hooks/useLanguage'
-import { Link } from 'react-router-dom'
+import { Link } from '../components/LocalizedLink'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { ArrowRight } from '../components/Icons'
 

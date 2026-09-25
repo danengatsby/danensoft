@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { AppRoutes } from '../App'
 import { allRoutes, projectRoutes } from '../content/site'
+import { pageDefinitions, normalizePath } from '../lib/routes'
 
 const ROUTES = [
   '/',
@@ -12,8 +13,10 @@ const ROUTES = [
   '/confidentialitate',
   '/404-test',
   ...projectRoutes.map((route) => route.to),
+  ...pageDefinitions.map((page) => page.en),
+  '/en/404-test',
 ]
-const KNOWN_PATHS = new Set(allRoutes.map((item) => item.to))
+const KNOWN_PATHS = new Set([...allRoutes.map((item) => item.to), ...pageDefinitions.map((page) => normalizePath(page.en))])
 
 function renderAt(path: string) {
   return render(
@@ -34,7 +37,7 @@ describe.each(ROUTES)('structura paginii %s', (path) => {
     expect(screen.getByRole('main')).toBeInTheDocument()
     expect(screen.getByRole('banner')).toBeInTheDocument()
     expect(screen.getByRole('contentinfo')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /sari la conținut/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /sari la conținut|skip to content/i })).toHaveAttribute(
       'href',
       '#continut',
     )
@@ -48,7 +51,7 @@ describe.each(ROUTES)('structura paginii %s', (path) => {
 
     for (const href of internal) {
       const [pathname] = href.split('#')
-      expect(KNOWN_PATHS.has(pathname === '' ? '/' : pathname)).toBe(true)
+      expect(KNOWN_PATHS.has(normalizePath(pathname))).toBe(true)
     }
   })
 

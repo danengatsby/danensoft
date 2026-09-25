@@ -1,30 +1,22 @@
 import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { company } from '../content/site'
 import { useLanguage } from './useLanguage'
+import { findPage, languages, localizedPagePath } from '../lib/routes'
 
-/** Setează titlul documentului și meta description pentru pagina curentă. */
+/** Metadatele folosesc aceeași definiție de pagină ca prerandarea și sitemap-ul. */
 export function usePageMeta(sourceTitle: string, sourceDescription: string) {
+  const { pathname } = useLocation()
   const { t, language } = useLanguage()
-  const title = t(sourceTitle)
-  const description = t(sourceDescription)
+  const page = findPage(pathname)
+  const title = t(page?.title ?? sourceTitle)
+  const description = t(page?.description ?? sourceDescription)
   useEffect(() => {
     const fullTitle = `${title} · ${company.name}`
-    const rawPath = window.location.pathname.replace(/\/+$/, '')
-    const canonicalPath = rawPath ? `${rawPath}/` : '/'
-    const canonicalUrl = new URL(canonicalPath, company.siteUrl).toString()
-
+    const canonicalUrl = page ? new URL(localizedPagePath(page, language), company.siteUrl).toString() : null
     document.title = fullTitle
-
-    let meta = document.querySelector<HTMLMetaElement>('meta[name="description"]')
-    if (!meta) {
-      meta = document.createElement('meta')
-      meta.name = 'description'
-      document.head.appendChild(meta)
-    }
-    meta.content = description
-
-    const setMeta = (selector: string, attribute: 'name' | 'property', key: string, value: string) => {
-      let element = document.querySelector<HTMLMetaElement>(selector)
+    const setMeta = (attribute: 'name' | 'property', key: string, value: string) => {
+      let element = document.querySelector<HTMLMetaElement>(`meta[${attribute}="${key}"]`)
       if (!element) {
         element = document.createElement('meta')
         element.setAttribute(attribute, key)
@@ -32,20 +24,30 @@ export function usePageMeta(sourceTitle: string, sourceDescription: string) {
       }
       element.content = value
     }
-
-    setMeta('meta[property="og:title"]', 'property', 'og:title', fullTitle)
-    setMeta('meta[property="og:locale"]', 'property', 'og:locale', language === 'en' ? 'en_GB' : 'ro_RO')
-    setMeta('meta[property="og:description"]', 'property', 'og:description', description)
-    setMeta('meta[property="og:url"]', 'property', 'og:url', canonicalUrl)
-    setMeta('meta[name="twitter:title"]', 'name', 'twitter:title', fullTitle)
-    setMeta('meta[name="twitter:description"]', 'name', 'twitter:description', description)
-
-    let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
-    if (!canonical) {
-      canonical = document.createElement('link')
+    setMeta('name', 'description', description)
+    setMeta('name', 'robots', page ? 'index,follow' : 'noindex,follow')
+    setMeta('property', 'og:title', fullTitle)
+    setMeta('property', 'og:locale', language === 'en' ? 'en_GB' : 'ro_RO')
+    setMeta('property', 'og:description', description)
+    setMeta('name', 'twitter:title', fullTitle)
+    setMeta('name', 'twitter:description', description)
+    setMeta('property', 'og:image:alt', t('Dan Enache — aplicații cloud și produse SaaS'))
+    document.querySelectorAll('link[rel="canonical"], link[rel="alternate"][hreflang]').forEach((element) => element.remove())
+    if (page && canonicalUrl) {
+      setMeta('property', 'og:url', canonicalUrl)
+      const canonical = document.createElement('link')
       canonical.rel = 'canonical'
+      canonical.href = canonicalUrl
       document.head.appendChild(canonical)
+      for (const locale of [...languages, 'x-default'] as const) {
+        const alternate = document.createElement('link')
+        alternate.rel = 'alternate'
+        alternate.hreflang = locale
+        alternate.href = new URL(localizedPagePath(page, locale === 'x-default' ? 'ro' : locale), company.siteUrl).toString()
+        document.head.appendChild(alternate)
+      }
+    } else {
+      document.querySelector('meta[property="og:url"]')?.remove()
     }
-    canonical.href = canonicalUrl
-  }, [title, description, language])
+  }, [title, description, language, page, t])
 }

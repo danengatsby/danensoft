@@ -53,7 +53,7 @@ export const privacySections: PrivacySection[] = [
     title: 'Cookie-uri, analiză și servicii externe',
     body: [
       'Site-ul public nu folosește cookie-uri, nu are instrumente de analiză a traficului și nu încarcă fonturi, hărți sau scripturi de la terți. Nicio pagină nu face cereri către alte domenii. Zona de administrare, accesibilă doar nouă, folosește un cookie de sesiune strict necesar pentru autentificare.',
-      'Preferințele pentru temă și limbă sunt salvate local în browser, în localStorage, sub cheile dan-enache-theme și dan-enache-language. Nu ne sunt transmise și dispar când ștergeți datele site-ului.',
+      'Preferința pentru temă este salvată local în browser, în localStorage, sub cheia dan-enache-theme. Nu ne este transmisă și dispare când ștergeți datele site-ului. Limba este determinată de adresa paginii: paginile în engleză folosesc prefixul /en/.',
       'Serverul care găzduiește site-ul înregistrează, ca orice server web, adresa IP și pagina accesată, în jurnale tehnice folosite pentru funcționare și securitate.',
     ],
   },

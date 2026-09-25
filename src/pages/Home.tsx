@@ -1,5 +1,5 @@
 import { useLanguage } from '../hooks/useLanguage'
-import { Link } from 'react-router-dom'
+import { Link } from '../components/LocalizedLink'
 import SectionHead from '../components/SectionHead'
 import DeliveryOverview from '../components/DeliveryOverview'
 import PublishedProjectCard from '../components/PublishedProjectCard'

@@ -3,13 +3,13 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { AppRoutes } from '../App'
-import { LANGUAGE_KEY, readLanguage, translate } from '../lib/language'
+import { LANGUAGE_KEY, translate } from '../lib/language'
 
 function renderPage(path = '/') {
   return render(<MemoryRouter initialEntries={[path]}><AppRoutes /></MemoryRouter>)
 }
 
-beforeEach(() => localStorage.removeItem(LANGUAGE_KEY))
+beforeEach(() => { localStorage.removeItem(LANGUAGE_KEY); vi.stubGlobal('scrollTo', vi.fn()) })
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
@@ -20,21 +20,21 @@ afterEach(() => {
 })
 
 describe('Language selection', () => {
-  it('changes content, metadata and navigation and remembers the choice after remounting', async () => {
+  it('changes the URL, content, metadata and navigation and supports direct English access', async () => {
     const user = userEvent.setup()
     const first = renderPage()
-    await user.click(screen.getByRole('button', { name: 'English' }))
+    await user.click(screen.getByRole('link', { name: 'English' }))
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Software built foryour business.')
     expect(document.documentElement.lang).toBe('en')
     expect(document.title).toBe('Software development for business · Dan Enache')
-    expect(localStorage.getItem(LANGUAGE_KEY)).toBe('en')
+    expect(screen.getByRole('link', { name: 'English' })).toHaveAttribute('href', '/en/')
     const nav = screen.getByRole('navigation', { name: 'Main navigation' })
     await user.click(within(nav).getByRole('link', { name: 'Services' }))
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Software services, from analysis to maintenance.')
     first.unmount()
-    renderPage('/despre')
+    renderPage('/en/about/')
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('A technical partner involved at every stage.')
-    await user.click(screen.getByRole('button', { name: 'Română' }))
+    await user.click(screen.getByRole('link', { name: 'Română' }))
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Un partener tehnic implicat în fiecare etapă.')
     expect(document.documentElement.lang).toBe('ro')
   })
@@ -43,7 +43,7 @@ describe('Language selection', () => {
     const user = userEvent.setup()
     renderPage('/proiecte')
     await user.click(screen.getByRole('button', { name: 'Mobil' }))
-    await user.click(screen.getByRole('button', { name: 'English' }))
+    await user.click(screen.getByRole('link', { name: 'English' }))
     expect(screen.getByRole('button', { name: 'Mobile' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('heading', { name: 'Application for field teams' })).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('0 published projects · 1 demo')
@@ -58,7 +58,7 @@ describe('Language selection', () => {
     await user.type(screen.getByLabelText('Nume și prenume'), 'Ana Test')
     await user.selectOptions(screen.getByLabelText('Subiect'), 'Integrări și automatizări')
     await user.click(screen.getByRole('button', { name: 'Trimite mesajul' }))
-    await user.click(screen.getByRole('button', { name: 'English' }))
+    await user.click(screen.getByRole('link', { name: 'English' }))
     expect(screen.getByLabelText('Full name')).toHaveValue('Ana Test')
     expect(screen.getByLabelText('Subject')).toHaveValue('Integrări și automatizări')
     expect(screen.getByText('Please enter a valid email address.')).toBeInTheDocument()
@@ -73,20 +73,21 @@ describe('Language selection', () => {
   it('keeps switching functional when browser storage is unavailable', async () => {
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('Blocked') })
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('Blocked') })
-    expect(readLanguage()).toBe('ro')
     renderPage()
-    await userEvent.click(screen.getByRole('button', { name: 'English' }))
+    await userEvent.click(screen.getByRole('link', { name: 'English' }))
     expect(document.documentElement.lang).toBe('en')
   })
 
-  it('synchronises changes from another tab and resets invalid stored values to Romanian', () => {
-    localStorage.setItem(LANGUAGE_KEY, 'invalid')
-    expect(readLanguage()).toBe('ro')
-    renderPage('/contact')
-    act(() => window.dispatchEvent(new StorageEvent('storage', { key: LANGUAGE_KEY, newValue: 'en' })))
-    expect(screen.getByLabelText('Full name')).toBeInTheDocument()
-    act(() => window.dispatchEvent(new StorageEvent('storage', { key: LANGUAGE_KEY, newValue: null })))
+  it('uses the URL despite an old preference or a storage event from another tab', () => {
+    localStorage.setItem(LANGUAGE_KEY, 'en')
+    const first = renderPage('/contact')
     expect(screen.getByLabelText('Nume și prenume')).toBeInTheDocument()
+    act(() => window.dispatchEvent(new StorageEvent('storage', { key: LANGUAGE_KEY, newValue: 'en' })))
+    expect(screen.getByLabelText('Nume și prenume')).toBeInTheDocument()
+    first.unmount()
+    localStorage.setItem(LANGUAGE_KEY, 'ro')
+    renderPage('/en/contact/')
+    expect(screen.getByLabelText('Full name')).toBeInTheDocument()
   })
 
   it('preserves surrounding spaces and interpolates project names and domains', () => {

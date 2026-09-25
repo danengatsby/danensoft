@@ -21,6 +21,13 @@ export function AppRoutes() {
         <Route path="despre" element={<About />} />
         <Route path="contact" element={<Contact />} />
         <Route path="confidentialitate" element={<Privacy />} />
+        <Route path="en" element={<Home />} />
+        <Route path="en/services" element={<Services />} />
+        <Route path="en/projects" element={<Portfolio />} />
+        <Route path="en/projects/:projectId" element={<ProjectDetail />} />
+        <Route path="en/about" element={<About />} />
+        <Route path="en/contact" element={<Contact />} />
+        <Route path="en/privacy" element={<Privacy />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes></LanguageProvider>

@@ -1,4 +1,5 @@
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { Link } from '../components/LocalizedLink'
 import PageIntro from '../components/PageIntro'
 import ContactCTA from '../components/ContactCTA'
 import { ArrowRight, ArrowUpRight, CheckIcon } from '../components/Icons'

@@ -1,5 +1,7 @@
 /** Traduceri EN. Cheile sunt textele românești; identificatorii și URL-urile rămân stabile. */
 export const english: Record<string, string> = {
+  "Preferința pentru temă este salvată local în browser, în localStorage, sub cheia dan-enache-theme. Nu ne este transmisă și dispare când ștergeți datele site-ului. Limba este determinată de adresa paginii: paginile în engleză folosesc prefixul /en/.": "Your theme preference is saved locally in your browser using localStorage, under dan-enache-theme. It is not sent to us and is removed when you clear the website’s data. The language is determined by the page address: English pages use the /en/ prefix.",
+  "Dan Enache — aplicații cloud și produse SaaS": "Dan Enache — cloud applications and SaaS products",
   "Vezi studiul de caz: {name}": "View case study: {name}",
   "Studiu de caz": "Case study",
   "De la problema inițială la soluția realizată. Descoperiți povestea fiecărui proiect.": "From the initial problem to the delivered solution. Explore the story behind each project.",

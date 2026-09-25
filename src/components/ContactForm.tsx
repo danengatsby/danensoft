@@ -6,7 +6,7 @@ import {
   type CSSProperties,
   type FormEvent,
 } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from './LocalizedLink'
 import { company, services } from '../content/site'
 import {
   mailtoHref,
