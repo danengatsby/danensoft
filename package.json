@@ -23,7 +23,7 @@
     "mail:test": "node --env-file=/etc/danen/api.env scripts/test-mail.mjs"
   },
   "dependencies": {
-    "nodemailer": "^9.1.1",
+    "nodemailer": "^10.0.10",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.2"
