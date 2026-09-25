@@ -51,7 +51,7 @@ describe('Language selection', () => {
 
   it('preserves form values and selected topic, translates errors and submits the original values', async () => {
     vi.stubEnv('VITE_CONTACT_ENDPOINT', '/api/contact')
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 201 }))
     vi.stubGlobal('fetch', fetchMock)
     const user = userEvent.setup()
     renderPage('/contact')

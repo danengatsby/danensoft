@@ -411,5 +411,21 @@ export const english: Record<string, string> = {
   "Nume": "Name",
   "Cerere": "Enquiry",
   "Câmpurile trebuie să conțină text.": "Fields must contain text.",
-  "Date invalide.": "Invalid details."
+  "Date invalide.": "Invalid details.",
+  "Nu am primit confirmarea în {seconds} secunde. Mesajul poate fi deja salvat; verificați e-mailul înainte de a retrimite.": "We did not receive confirmation within {seconds} seconds. Your message may already be saved; check your email before sending it again.",
+  "Conexiunea cu serverul a fost întreruptă. Verificați conexiunea la internet și e-mailul de confirmare înainte de a retrimite.": "The connection to the server was interrupted. Check your internet connection and look for a confirmation email before sending again.",
+  "Verificați datele completate și corectați câmpurile indicate înainte de a retrimite.": "Check your details and correct any highlighted fields before sending again.",
+  "Datele trimise nu au putut fi procesate. Verificați câmpurile formularului și încercați din nou.": "Your details could not be processed. Check the form fields and try again.",
+  "Serverul nu permite trimiterea momentan. Puteți trimite solicitarea prin e-mail.": "The server is not allowing submissions at the moment. You can send your enquiry by email.",
+  "Datele trimise sunt prea lungi. Scurtați mesajul și celelalte câmpuri înainte de a retrimite.": "The submitted details are too long. Shorten your message and the other fields before sending again.",
+  "Ați încercat să trimiteți prea multe mesaje într-un interval scurt. Așteptați câteva minute înainte de o nouă încercare.": "You have tried to send too many messages in a short time. Wait a few minutes before trying again.",
+  "Serviciul de mesaje este temporar indisponibil. Încercați din nou mai târziu sau trimiteți solicitarea prin e-mail.": "The messaging service is temporarily unavailable. Try again later or send your enquiry by email.",
+  "Serverul a întâmpinat o problemă. Nu putem confirma salvarea mesajului; verificați e-mailul înainte de a reîncerca mai târziu.": "The server encountered a problem. We cannot confirm that your message was saved; check your email before trying again later.",
+  "Nu am primit o confirmare validă de la server. Mesajul poate fi deja salvat; verificați e-mailul înainte de a retrimite.": "We did not receive a valid confirmation from the server. Your message may already be saved; check your email before sending it again.",
+  "Verificați organizația completată.": "Check the organisation you entered.",
+  "Selectați un subiect valid.": "Select a valid subject.",
+  "Verificați mesajul: între 20 și 5.000 de caractere.": "Check your message: between 20 and 5,000 characters.",
+  "Se trimite mesajul. Așteptăm confirmarea cel mult {seconds} secunde.": "Sending your message. We will wait up to {seconds} seconds for confirmation.",
+  "Trimiterea nu a fost confirmată.": "Your submission has not been confirmed.",
+  "Datele completate au fost păstrate.": "Your entered details have been kept."
 }

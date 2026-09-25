@@ -83,7 +83,7 @@ describe('validate()', () => {
 describe('<ContactForm />', () => {
   it('păstrează textul lipit peste limită, explică eroarea și permite corectarea', async () => {
     const user = userEvent.setup()
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 201 })
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 201 }))
     vi.stubGlobal('fetch', fetchMock)
     renderForm()
     await fillValidForm(user)
@@ -121,7 +121,7 @@ describe('<ContactForm />', () => {
 
   it('trimite datele la endpoint și confirmă doar după un răspuns reușit', async () => {
     const user = userEvent.setup()
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 201 })
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 201 }))
     vi.stubGlobal('fetch', fetchMock)
     renderForm()
 
@@ -148,7 +148,7 @@ describe('<ContactForm />', () => {
     await user.click(screen.getByRole('button', { name: /trimite mesajul/i }))
 
     const status = await screen.findByRole('status')
-    expect(status).toHaveTextContent(/eșuat/i)
+    expect(status).toHaveTextContent(/prea multe mesaje/i)
     expect(status).not.toHaveTextContent(/mesaj trimis/i)
   })
 
@@ -161,7 +161,8 @@ describe('<ContactForm />', () => {
     renderForm()
     await fillValidForm(user)
     await user.click(screen.getByRole('button', { name: /trimite mesajul/i }))
-    expect(screen.getByRole('status')).toHaveTextContent(/mesajul poate avea cel mult 5\.000 de caractere/i)
+    expect(screen.getByLabelText(/despre ce este vorba/i)).toHaveAccessibleDescription(/mesajul poate avea cel mult 5\.000 de caractere/i)
+    expect(screen.getByLabelText(/despre ce este vorba/i)).toHaveFocus()
     expect(screen.getByLabelText(/despre ce este vorba/i)).toHaveValue(
       'Introducem manual facturile primite pe e-mail în programul de contabilitate.',
     )

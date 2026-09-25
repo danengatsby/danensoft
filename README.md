@@ -96,9 +96,26 @@ cp .env.example .env.local
 # completați VITE_CONTACT_ENDPOINT cu un endpoint care acceptă POST JSON
 ```
 
-Endpoint-ul primește `{ name, email, organisation, topic, message }` și trebuie
-să răspundă cu un status 2xx. Nu puneți chei private în cod: variabilele `VITE_*`
+Endpoint-ul primește `{ name, email, organisation, topic, message }` și confirmă
+salvarea printr-un status 2xx cu JSON `{ "ok": true }`. Nu puneți chei private în cod: variabilele `VITE_*`
 ajung în bundle-ul livrat browserului.
+
+Formularul așteaptă cel mult 15 secunde pentru răspunsul complet. Limita include
+citirea JSON-ului, iar cererea este anulată la expirare sau părăsirea paginii.
+În timpul trimiterii, câmpurile și butonul sunt dezactivate pentru a preveni
+modificări pierdute și trimiteri simultane; selectorul de limbă rămâne activ.
+
+Mesajele RO/EN disting expirarea, pierderea conexiunii, validarea, datele prea
+lungi, accesul refuzat, limitarea frecvenței și indisponibilitatea serverului.
+La 422, câmpurile cunoscute din lista `fields` primesc explicații locale și
+focusul ajunge la primul câmp invalid. Corpurile tehnice ale erorilor nu sunt
+afișate vizitatorului. Un răspuns HTML sau JSON fără `ok: true` nu confirmă succesul.
+
+La eșec, datele se păstrează în formular și sunt incluse în linkul de e-mail.
+Expirarea sau pierderea confirmării nu dovedesc că mesajul nu a fost salvat;
+interfața recomandă verificarea e-mailului înainte de retrimitere. Formularul
+nu reîncearcă automat. Acest comportament este separat de coada SMTP, care
+reîncearcă livrarea notificărilor pentru mesajele deja salvate.
 
 ## Publicare
 

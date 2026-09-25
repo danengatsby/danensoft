@@ -1,5 +1,45 @@
 # Raport de verificare
 
+## Formular: termen de așteptare și erori explicite — 25 septembrie 2026
+
+Publicat în release-ul `2026-09-25T05-36-12-501Z-0c0ac0c4`.
+Versiunea precedentă rămâne disponibilă prin `npm run rollback`.
+
+- Cererea are un termen de 15 secunde, inclusiv citirea răspunsului JSON.
+  Expirarea și părăsirea paginii anulează cererea; timerul și listener-ele
+  sunt curățate după încheiere. O confirmare întârziată nu golește formularul.
+- Câmpurile și butonul sunt dezactivate în timpul trimiterii, iar o rezervare
+  sincronă împiedică două cereri simultane. Selectorul RO/EN păstrează cererea
+  activă, datele și termenul inițial.
+- Mesajele RO/EN disting conexiunea întreruptă, expirarea, validarea, datele
+  prea lungi, accesul refuzat, prea multe încercări și erorile serverului.
+  Codurile HTTP și corpurile tehnice ale răspunsurilor nu sunt afișate.
+- La 422, lista `fields` este filtrată la câmpurile cunoscute; explicațiile
+  locale sunt asociate accesibil câmpurilor, iar primul primește focusul.
+  Pentru celelalte erori, focusul ajunge la mesajul de stare.
+- Succesul necesită status 2xx și JSON cu `ok: true`, conform API-ului existent.
+  HTML-ul sau un răspuns fără confirmare nu sunt prezentate ca succes.
+- La eșec se păstrează datele și se oferă un link de e-mail precompletat.
+  Expirarea, pierderea conexiunii sau a confirmării pot surveni după salvare;
+  mesajul recomandă verificarea e-mailului înainte de retrimitere. Nu există
+  reîncercări automate ale formularului. Serviciul Node și coada SMTP nu au
+  fost modificate în această rundă.
+- ESLint, TypeScript, build-ul cu 22 de pagini și toate cele 269 de teste din
+  15 fișiere au trecut. Cele 31 de teste noi acoperă inclusiv răspunsuri
+  blocate înainte de antete sau în corp, JSON invalid, anularea la demontare,
+  răspunsuri întârziate, retrimiterea explicită și schimbarea limbii.
+- Chromium pe candidat: 40 de scenarii în RO/EN, la 360 px cu tema deschisă
+  și 1440 px cu tema întunecată. Verificate zece stări de trimitere, fără
+  overflow, excepții JavaScript sau încălcări axe serious/critical.
+- Pe HTTPS: șase probe pentru validare, expirare și succes, în ambele limbi.
+  Termenul a fost verificat cu așteptare reală, fără accelerarea timerului.
+  Rapoarte: `qa-screens/contact-request-candidate.json` și
+  `qa-screens/contact-request-production.json`.
+
+Toate cererile POST din probele de browser au fost interceptate și simulate.
+Nu au fost salvate mesaje de test sau trimise e-mailuri reale. Verificarea
+confirmă comportamentul formularului, fără a reverifica livrarea SMTP.
+
 ## Adrese RO / EN și HTML prerandat — 25 septembrie 2026
 
 Publicat pe HTTPS și portul 8090 în release-ul

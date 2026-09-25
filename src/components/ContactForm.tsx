@@ -1,5 +1,6 @@
 import { useLanguage } from '../hooks/useLanguage'
 import {
+  useEffect,
   useRef,
   useState,
   type ChangeEvent,
@@ -16,6 +17,7 @@ import {
   type ContactErrors as Errors,
   type ContactValues as Values,
 } from '../lib/contact'
+import { CONTACT_TIMEOUT_MS, contactFailureMessages, sendContact, type ContactFailure } from '../lib/contact-request'
 
 /**
  * Ținta formularului. Implicit `/api/contact`, serviciul propriu care salvează
@@ -32,7 +34,7 @@ type Status =
   | { kind: 'pending' }
   | { kind: 'sent' }
   | { kind: 'demo'; payload: Values }
-  | { kind: 'error'; detail?: string }
+  | { kind: 'error'; reason: ContactFailure; fields?: Errors }
 
 const EMPTY: Values = {
   name: '',
@@ -48,6 +50,21 @@ export default function ContactForm() {
   const [errors, setErrors] = useState<Errors>({})
   const [status, setStatus] = useState<Status>({ kind: 'idle' })
   const formRef = useRef<HTMLFormElement>(null)
+  const statusRef = useRef<HTMLDivElement>(null)
+  const requestRef = useRef<AbortController | null>(null)
+
+  useEffect(() => () => {
+    requestRef.current?.abort()
+    requestRef.current = null
+  }, [])
+
+  useEffect(() => {
+    if (status.kind !== 'error') return
+    const field = Object.keys(status.fields ?? {})[0]
+    const target = field ? formRef.current?.querySelector<HTMLElement>(`[name="${field}"]`) : null
+    const focusTarget = target ?? statusRef.current
+    focusTarget?.focus()
+  }, [status])
 
   const update = (field: keyof Values) => (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
@@ -63,6 +80,7 @@ export default function ContactForm() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (requestRef.current) return
 
     // Capcană pentru roboți: dacă este completată, ne oprim în tăcere.
     const honeypot = new FormData(event.currentTarget).get('website')
@@ -87,27 +105,17 @@ export default function ContactForm() {
       return
     }
 
+    const controller = new AbortController()
+    requestRef.current = controller
     setStatus({ kind: 'pending' })
     try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(values),
-      })
-      if (!response.ok) {
-        if (response.status === 422) {
-          const details = await response.json().catch(() => null)
-          if (typeof details?.error === 'string') throw new Error(details.error)
-        }
-        throw new Error(`HTTP ${response.status}`)
-      }
-      setStatus({ kind: 'sent' })
-      setValues(EMPTY)
-    } catch (error) {
-      setStatus({
-        kind: 'error',
-        detail: error instanceof Error ? error.message : undefined,
-      })
+      const result = await sendContact(endpoint, values, controller.signal)
+      if (requestRef.current !== controller || result.kind === 'cancelled') return
+      setStatus(result)
+      if (result.kind === 'sent') setValues(EMPTY)
+      else setErrors(result.fields ?? {})
+    } finally {
+      if (requestRef.current === controller) requestRef.current = null
     }
   }
 
@@ -123,13 +131,14 @@ export default function ContactForm() {
         </p>
       )}
 
-      <form className="form" onSubmit={handleSubmit} ref={formRef} noValidate>
+      <form className="form" onSubmit={handleSubmit} ref={formRef} aria-busy={pending} noValidate>
         <div className="field-row">
           <div className="field">
             <label className="field__label" htmlFor="name">{t("Nume și prenume")}</label>
             <input
               id="name"
               name="name"
+              disabled={pending}
               autoComplete="name"
               value={values.name}
               onChange={update('name')}
@@ -149,6 +158,7 @@ export default function ContactForm() {
             <input
               id="email"
               name="email"
+              disabled={pending}
               type="email"
               autoComplete="email"
               value={values.email}
@@ -172,10 +182,14 @@ export default function ContactForm() {
             <input
               id="organisation"
               name="organisation"
+              disabled={pending}
               autoComplete="organization"
               value={values.organisation}
               onChange={update('organisation')}
+              aria-invalid={Boolean(errors.organisation)}
+              aria-describedby={errors.organisation ? 'organisation-error' : undefined}
             />
+            {errors.organisation && <p className="field__error" id="organisation-error">{t(errors.organisation)}</p>}
           </div>
 
           <div className="field">
@@ -183,8 +197,11 @@ export default function ContactForm() {
             <select
               id="topic"
               name="topic"
+              disabled={pending}
               value={values.topic}
               onChange={update('topic')}
+              aria-invalid={Boolean(errors.topic)}
+              aria-describedby={errors.topic ? 'topic-error' : undefined}
             >
               {services.map((service) => (
                 <option key={service.id} value={service.title}>
@@ -193,6 +210,7 @@ export default function ContactForm() {
               ))}
               <option value="Altceva">{t("Altceva")}</option>
             </select>
+            {errors.topic && <p className="field__error" id="topic-error">{t(errors.topic)}</p>}
           </div>
         </div>
 
@@ -202,6 +220,7 @@ export default function ContactForm() {
           <textarea
             id="message"
             name="message"
+            disabled={pending}
             value={values.message}
             onChange={update('message')}
             aria-invalid={Boolean(errors.message)}
@@ -237,7 +256,10 @@ export default function ContactForm() {
         </p>
       </form>
 
-      <div role="status" aria-live="polite">
+      <div role="status" aria-live="polite" aria-atomic="true" tabIndex={-1} ref={statusRef}>
+        {pending && (
+          <p className="notice">{t('Se trimite mesajul. Așteptăm confirmarea cel mult {seconds} secunde.', { seconds: CONTACT_TIMEOUT_MS / 1000 })}</p>
+        )}
         {status.kind === 'sent' && (
           <p className="notice notice--ok">
             <strong>{t("Mesaj trimis.")}</strong>{t(" Vă răspundem pe adresa indicată.")}</p>
@@ -253,8 +275,10 @@ export default function ContactForm() {
 
         {status.kind === 'error' && (
           <p className="notice notice--error">
-            <strong>{status.detail ? t('Trimiterea a eșuat ({error}).', { error: t(status.detail) }) : t('Trimiterea a eșuat.')}</strong>{t(" Încercați din nou sau scrieți la")}{' '}
-            <a href={`mailto:${company.email}`}>{t(company.email)}</a>.
+            <strong>{t('Trimiterea nu a fost confirmată.')}</strong>{' '}
+            {t(contactFailureMessages[status.reason], { seconds: CONTACT_TIMEOUT_MS / 1000 })}{' '}
+            {t('Datele completate au fost păstrate.')}{' '}
+            <a href={mailtoHref(values, t)}>{t('Deschideți mesajul în clientul de e-mail')}</a>.
           </p>
         )}
       </div>
