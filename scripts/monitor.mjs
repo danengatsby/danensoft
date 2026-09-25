@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import { readFile, writeFile, rename, readdir, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
@@ -35,6 +36,14 @@ await check('offsite_backup', async () => {
   const status = JSON.parse(await readFile('/var/backups/danen/offsite-status.json', 'utf8'))
   if (now - Date.parse(status.verifiedAt) > 36 * 3600_000) throw new Error('External backup older than 36 hours')
   return 'Downloaded, decrypted and verified'
+})
+await check('offsite_schedule', async () => {
+  const receipt = JSON.parse(await readFile('/var/backups/danen/offsite-status.json', 'utf8'))
+  const unit = receipt.provider === 'google_drive' ? 'danen-backup-drive.timer' : 'danen-backup-offsite.timer'
+  let enabled = false
+  try { enabled = execFileSync('systemctl',['is-enabled',unit],{ encoding:'utf8',stdio:['ignore','pipe','ignore'] }).trim() === 'enabled' } catch { /* Not configured yet. */ }
+  if (!enabled) throw new Error('Daily external backup requires server authorization and timer activation')
+  return unit
 })
 await check('mail_queues', async () => {
   const db = new DatabaseSync(process.env.DANEN_DB ?? '/var/lib/danen/messages.db', { readOnly:true })

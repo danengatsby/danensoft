@@ -1,0 +1,25 @@
+[Unit]
+Description=Danensoft encrypted Google Drive backup with restore verification
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/etc/danen/drive/rclone.conf
+
+[Service]
+Type=oneshot
+User=danen
+Group=danen
+UMask=0077
+WorkingDirectory=/var/www/danensoft
+EnvironmentFile=/etc/danen/drive.env
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+Environment=DANEN_DB=/var/lib/danen/messages.db
+Environment=DANEN_BACKUP_DIR=/var/backups/danen
+Environment=DANEN_BACKUP_KEY=/etc/danen/backup.key
+ExecStart=/usr/local/bin/node /var/www/danensoft/scripts/backup-drive.mjs
+TimeoutStartSec=30min
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/danen /var/backups/danen /etc/danen/drive

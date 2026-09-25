@@ -67,7 +67,7 @@ Pentru verificare fără trimitere:
 danen-backup.timer rulează zilnic și păstrează 14 copii SQLite verificate, în /var/backups/danen.
 Testarea restaurării citește efectiv o copie și verifică integrity_check și foreign_key_check.
 
-Backupul extern este pregătit prin SSH/rsync, dar nu poate fi activat fără o destinație și accesul aferent.
+O copie externă criptată a fost încărcată în Google Drive și verificată prin descărcare, decriptare și verificare SQLite. Transferul zilnic direct de pe server necesită autorizarea Google separată descrisă mai jos. Alternativa SSH/rsync rămâne disponibilă.
 Copia externă include baza și api.env, criptate AES-256-GCM; serverul descarcă, decriptează și verifică copia înainte de a marca succesul.
 Cheia de 32 octeți este /etc/danen/backup.key, root:danen, 0640. Salvați separat o copie a cheii într-un seif/parolier accesibil la recuperare.
 Pierderea serverului și a singurei copii a cheii ar face imposibilă decriptarea. Nu încărcați cheia alături de arhiva externă.
@@ -108,3 +108,53 @@ Pentru diagnostic:
 GitHub Actions verifică instalarea, sintaxa JS, lint, tipuri, teste, build și audit.
 Dependabot verifică săptămânal npm și lunar acțiunile GitHub.
 Pentru dezvoltare, porniți API-ul separat cu o bază temporară și SMTP neconfigurat. Vite proxy direcționează /api, /admin și /cont către localhost:8091, fără a intercepta /contact.
+
+## Google Drive
+
+Folder privat al titularului: https://drive.google.com/drive/folders/1dP3WsOyIKCZ01WNeNT0CCDj_VEFSdkwH
+
+Copia din 25 septembrie 2026, ora 15:57 UTC, include 1 utilizator (administrator), 1 mesaj de test și api.env.
+SHA-256: 9edaa999af6ffd89c360eca67c8f2b441fc0b2d3b429fa177756f4a92c122e22.
+A fost descărcată prin conectorul Google Drive, comparată și decriptată; integritatea SQLite și relațiile au trecut verificarea.
+Cheia de recuperare a fost copiată separat în C:\Users\danen\.ssh\danensoft-backup.key, cu acces numai pentru contul Windows al titularului.
+Nu încărcați cheia în folderul cu arhivele.
+
+Conectorul Google Drive din conversație permite copiile manuale, dar nu expune autorizarea sa către server.
+Pentru operațiuni zilnice, rclone este instalat pe server; configurați conexiunea danensoft direct în terminal:
+
+    sudo -u danen rclone config --config /etc/danen/drive/rclone.conf
+
+Creați un OAuth client propriu de tip Desktop în Google Cloud Console, activați Google Drive API și adăugați contul titular drept utilizator. Rclone avertizează că ID-ul OAuth comun nu va mai funcționa în 2026: https://rclone.org/drive/#making-your-own-client-id.
+
+Aplicația aflată în modul Testing poate avea tokenurile de reîmprospătare revocate după 7 zile. Pentru o programare zilnică fără reautorizări săptămânale, publicați aplicația personală în Production; Google poate afișa avertismentul că aplicația nu este verificată. Detaliile și pașii Google se pot schimba; urmați documentația rclone de mai sus.
+
+Autorizarea serverului fără browser se face prin tunel SSH: https://rclone.org/remote_setup/.
+În prima fereastră PowerShell de pe PC, lăsați tunelul deschis:
+
+    ssh -L 53682:127.0.0.1:53682 -N ubuntu-aws
+
+Într-o a doua fereastră PowerShell, conectați-vă și porniți configurarea:
+
+    ssh ubuntu-aws
+    sudo -u danen /usr/local/bin/rclone config --config /etc/danen/drive/rclone.conf
+
+Creați remote-ul danensoft, selectați drive, introduceți client ID și secret în terminal, alegeți scope-ul drive și răspundeți y la autentificarea automată în browser. Scope-ul drive acordă aplicației acces complet la fișierele Drive. Google va cere consimțământ explicit. ID-ul folderului de mai sus este rădăcina folosită de joburile rclone, dar nu restrânge permisiunile OAuth ale tokenului.
+Deschideți în browserul PC-ului adresa http://127.0.0.1:53682/... pe care rclone o afișează în terminalul serverului și aprobați aplicația în contul titularului. Finalizați configurarea în terminalul serverului.
+
+Introduceți client ID, secret și token numai în terminal; configurația privată trebuie să rămână în /etc/danen/drive/rclone.conf. Nu copiați valorile în GitHub, documentație sau conversații.
+
+După autorizare:
+
+    sudo /var/www/danensoft/deploy/activate-drive-backup.sh
+
+Scriptul verifică transferul prin descărcare/decriptare/restaurare înainte de activarea timerului.
+danen-backup-drive.timer este pregătit pentru 03:45 UTC zilnic, cu întârziere aleatoare de până la 15 minute.
+Nu este încă activat: lipsa autorizării este raportată separat de existența copiei manuale.
+Rclone poate actualiza tokenul numai în directorul privat /etc/danen/drive (danen:danen, 0700; config 0600).
+Fișierul public drive.env.example conține doar numele conexiunii, calea configurației și ID-ul folderului.
+
+Creați o arhivă criptată pentru transfer manual cu:
+
+    sudo -u danen /usr/local/bin/node /var/www/danensoft/scripts/create-encrypted-backup.mjs
+
+Scriptul zilnic păstrează ultimele 14 arhive criptate atât local, cât și în folderul Drive și șterge arhivele mai vechi numai după verificarea descărcării și decriptării copiei noi.
